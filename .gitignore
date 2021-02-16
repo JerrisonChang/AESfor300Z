@@ -1,0 +1,17 @@
+# virtual environment
+venv/
+
+# static files
+predict_results/
+trainedmodel/
+ICSI-300*/
+
+/*.xlsx
+/*.csv
+/*.pdf
+/*.docx
+
+.DS_Store
+
+# settings
+.vscode/
