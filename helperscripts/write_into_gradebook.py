@@ -38,6 +38,9 @@ def convert_pts_to_rank(singled_cat: 'df', max_pts: str) -> 'df':
 
 def split_train_test(single_cat: 'df', ratio= 0.8) -> tuple:
     assert ratio < 1
+    # filter out row where essays are empty but get high scores (pdfs)
+    # filtered_df = single_cat.iloc[:,1].where(lambda x: x != 1) & single_cat.iloc[:,2] == ""
+    # print(filtered_df)
     masks = [single_cat.iloc[:,1] == i for i in [1,2,3,4]]
  
     train = []
@@ -55,6 +58,7 @@ def split_train_test(single_cat: 'df', ratio= 0.8) -> tuple:
     return (concat_train, concat_test)
     
 
+
 def add_content_into_exisiting_gradebook(exisiting_gradebook_path, new_content_directory: str):
     grade_book_df = pd.read_excel(exisiting_gradebook_path, engine='openpyxl')
     
@@ -71,29 +75,36 @@ def split_train_test_on_item(data_path:str , column_name: str):
     distribution = collections.Counter(rank_column)
     # split each rank in 
 
+def split_data_into_categories(dataFrame: 'df', hw_num: str):
+    essay_dir = f"essays/{hw_num}_fa20"
+    dataframe_with_essay = append_essay_content_to_gb(dataFrame, essay_dir)
+
+    categories = [
+        ## category, worths points , folder for the outputfile
+        # ('content', '20pts', './classifiers/content_{hw_num}'),
+        ('research', '20pts', './classifiers/research'),
+        ('organization', '15pts', './classifiers/organization'),
+        # ('communication', '15pts', './classifiers/communication_{hw_num}'),
+        ('effort', '10pts', './classifiers/effort'),
+        ('bibliography', '10pts', './classifiers/bibliography'),
+        ('quality of writing', '10pts', './classifiers/quality_of_writing')
+    ]
+
+    for category, pts, output_dir in categories:
+        temp_df = single_out_category(dataframe_with_essay, category)
+        temp_rank_df = convert_pts_to_rank(temp_df, pts)
+        train_test_data = split_train_test(temp_rank_df)
+        output_names = ['train', 'test']
+
+        for data, name in zip(train_test_data, output_names):
+            data.to_csv(f"{output_dir}/{hw_num}_{name}.csv")
+
 if __name__ == "__main__":
     # GRADE_BOOK_PATH = '2020_hw_DATA.xlsx'
     # EXISTING_GRADE_BOOK_PATH = 'hw1_entire_data_processed.xlsx'
 
-    base_gb_hw1 = pd.read_excel('ICSI-300Z-Fall2020.xlsx', sheet_name=1, engine='openpyxl')
-    # print(base_gb_hw1.head)
-    append_essay_content_to_gb(base_gb_hw1, 'essays/hw1_fa20')
-    writing_gb = single_out_category(base_gb_hw1, 'quality of writing')
-    abc = convert_pts_to_rank(writing_gb, '10pts')
-    train_test_data = split_train_test(abc)
-    output_dir = './classifiers/quality_of_writing'
-    output_name = ['train', 'test']
-
-    for data, name in zip(train_test_data, output_name):
-        data.to_csv(f"{output_dir}/hw1_{name}.csv")
-    
-
-    # abc = get_content_and_column(base_gb_hw1, 'quality of writing', 'essays/hw1_fa20')
-    
-    # print(abc)
-    # write_content_into_gradebook(ASSIGNMENT_DIR, GRADE_BOOK_PATH, 'hw1_entire_data.csv') 
-    # split_train_test_on_item('hw1_entire_data_processed.xlsx', 'content_s')
-    
-    # add_content_into_exisiting_gradebook(EXISTING_GRADE_BOOK_PATH, 'ICSI-300Z_hw1_summer20')
+    base_gb_hw1 = pd.read_excel('ICSI-300Z-Fall2020.xlsx', sheet_name=2, engine='openpyxl')
 
     
+
+   
