@@ -13,5 +13,8 @@ ICSI-300*/
 
 .DS_Store
 
+# cache files
+__pycache__/*
+
 # settings
 .vscode/
