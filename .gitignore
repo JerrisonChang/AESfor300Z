@@ -5,6 +5,7 @@ venv/
 predict_results/
 trainedmodel/
 ICSI-300*/
+essays/*
 
 /*.xlsx
 /*.csv
@@ -14,7 +15,7 @@ ICSI-300*/
 .DS_Store
 
 # cache files
-__pycache__/*
+*/__pycache__/*
 
 # settings
 .vscode/

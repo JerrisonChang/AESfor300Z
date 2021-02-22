@@ -63,6 +63,8 @@ def split_train_test(single_cat: 'df', ratio= 0.8) -> tuple:
         test.append(test_data_of_rank)
 
     concat_train = pd.concat(train).sort_index()
+    mask = ~((concat_train.iloc[:,1] != 1) & (concat_train['essay body']== '')) # in case it is a pdf file
+    concat_train = concat_train[mask]
     concat_test = pd.concat(test).sort_index()
 
     return (concat_train, concat_test)

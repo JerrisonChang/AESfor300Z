@@ -28,7 +28,7 @@ def get_netID2structuredContent(path: str) -> dict:
 
 def get_docx_assignment_list(path:str) -> list:
     result = glob.glob(f"{path}/*.docx")
-
+    result = list(filter(lambda x: '~$' not in x,result))
     return result
 
 def get_pdf_assignment_list(path:str) -> list:
@@ -72,14 +72,20 @@ def read_docx_and_structure(file_path: str) -> tuple:
     for i, paragraph in enumerate(paragraphs):
         word_count = len(paragraph.split(' '))
         
-        if (not found_content_start) and word_count >= 45:
-            found_content_start = True
-            content_start_index = i
-
-        if found_content_start and not found_reference_start and word_count<=3:
-        # if (not found_reference_start) and paragraph.lower() in ['bibliography', 'references', 'reference','sources']:
-            found_reference_start = True
-            reference_start_index = i
+        if (not found_content_start):
+            if word_count >= 45 or paragraph.lower() in ['abstract']: 
+                found_content_start = True
+                content_start_index = i
+        elif not found_reference_start:
+            if word_count<=3:
+                # if (not found_reference_start) and paragraph.lower() in ['bibliography', 'references', 'reference','sources']:
+                is_page_number = re.match(r'.*\d\s?$', paragraph) != None # page number e.g. "page 1" or "Bobby 1"
+                is_other_title = paragraph.lower() in ['introduction', 'conclusion', 'abstract']
+                if is_page_number or is_other_title:
+                    continue
+            
+                found_reference_start = True
+                reference_start_index = i
 
     if found_content_start:
         title = '\n'.join(paragraphs[:content_start_index])
