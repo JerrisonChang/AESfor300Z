@@ -8,10 +8,10 @@ import PyPDF2
 import re
 
 class DocxReader():
-    def __init__(self, essay_folder:str):
-        self.essay_folder = essay_folder
+    def __init__(self, path_to_essay_folder:str):
+        self.essay_folder = path_to_essay_folder
 
-    def get_netID2_structured_content(self) -> dict:
+    def get_netID_to_structured_content(self) -> dict:
         result = {}
         for i in self.get_dox_assignment_list():
             netID = self.get_netID_from_file_path(i)
