@@ -1,9 +1,13 @@
 import pandas as pd
 import os
+# from helperscripts
 import read_docx 
 import collections
 import json
-
+###
+# This 
+#
+###
 def write_content_into_gradebook(directory, gradebook_path, output_name):
     netID2content = read_docx.get_netID2content(directory)
     grade_book_df = pd.read_excel(gradebook_path, 1, engine='openpyxl')
@@ -24,6 +28,7 @@ def append_structured_essay_content_to_gb(base_gradebook: 'df', hw_dir) -> 'df':
     base_gradebook['essay refs'] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'],empty_essay)[2], axis=1)
 
     return base_gradebook
+
 def single_out_category(base_gradebook: 'df', category: str) -> 'df':
     assert category in base_gradebook.columns
     export_gb = base_gradebook.filter(items = ['Username', category, 'essay content', 'title page', 'essay body', 'essay refs'])
@@ -69,8 +74,11 @@ def split_train_test(single_cat: 'df', ratio= 0.8) -> tuple:
 
     return (concat_train, concat_test)
     
-def split_data_by_categories(dataFrame: 'df', hw_num: str):
-    essay_dir = f"essays/{hw_num}_s21"
+def split_data_by_categories(dataFrame: 'df', hw_num: str, semester_code: str):
+    """
+    This function will be called for creating training gradebook for each categories and put them in corresponding folders.
+    """
+    essay_dir = f"essays/{hw_num}_{semester_code}"
     # dataframe_with_essay = append_essay_content_to_gb(dataFrame, essay_dir)
     dataframe_with_structured_essay = append_structured_essay_content_to_gb(dataFrame, essay_dir)
 
@@ -102,18 +110,22 @@ def create_predict_templates(path_to_blank_gb: str, path_to_essays: str, output_
     append_structured_essay_content_to_gb(base_gb, path_to_essays)
     base_gb.to_csv(output_csv)
 
+def create_train_csv(hw_code: str, semester_code: str):
+    base_gb = pd.read_excel('ICSI-300Z-Fall2020.xlsx', sheet_name=4, engine='openpyxl').fillna(0)
+    split_data_by_categories(base_gb, hw_code, semester_code)
+
 if __name__ == "__main__":
     settings = {
-        'path_to_blank_gb': './hw1_s21.xlsx',
-        'path_to_essays': './essays/hw2_s21',
+        'path_to_blank_gb': './s21_student_roster.xlsx',
+        'path_to_essays': './essays/hw4_s21',
         'output_csv': './gradebook/predict_template.csv'
     }
-    create_predict_templates(**settings)
+    # create_train_csv('hw4', 'fa20')
+    
+    create_predict_templates(**settings) 
     
     # base_gb_hw1 = pd.read_excel('ICSI-300Z-Fall2020.xlsx', sheet_name=1, engine='openpyxl').fillna(0)
-    
     # base_gb_hw1 = pd.read_excel('hw1_s21.xlsx', sheet_name=0, engine='openpyxl').fillna(0)
-    
     
     # base_gb_hw2 = pd.read_excel('ICSI-300Z-Fall2020.xlsx', sheet_name=2, engine= 'openpyxl').fillna(0)
     # base_gb_hw3 = pd.read_excel('ICSI-300Z-Fall2020.xlsx', sheet_name=3, engine= 'openpyxl').fillna(0)
