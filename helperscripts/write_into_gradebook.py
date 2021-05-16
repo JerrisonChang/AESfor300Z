@@ -26,6 +26,8 @@ def append_structured_essay_content_to_gb(base_gradebook: 'df', hw_dir) -> 'df':
     base_gradebook['title page'] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'],empty_essay)[0], axis=1)
     base_gradebook['essay body'] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'],empty_essay)[1], axis=1)
     base_gradebook['essay refs'] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'],empty_essay)[2], axis=1)
+    base_gradebook['word count'] = base_gradebook.apply(lambda row: len(row['essay body'].split(' ')) if len(row['essay body'].split(' '))>1 else 0, axis=1)
+    base_gradebook['bibliography'] = base_gradebook.apply(lambda row: "", axis=1)
 
     return base_gradebook
 
@@ -107,7 +109,7 @@ def split_data_by_categories(dataFrame: 'df', hw_num: str, semester_code: str):
 
 def create_predict_templates(path_to_blank_gb: str, path_to_essays: str, output_csv:str):
     base_gb = pd.read_excel(path_to_blank_gb, sheet_name=0, engine='openpyxl').fillna(0)
-    append_structured_essay_content_to_gb(base_gb, path_to_essays)
+    base_gb = append_structured_essay_content_to_gb(base_gb, path_to_essays)
     base_gb.to_csv(output_csv)
 
 def create_train_csv(hw_code: str, semester_code: str):
