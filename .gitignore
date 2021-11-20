@@ -6,6 +6,7 @@ predict_results/
 trainedmodel/
 ICSI-300*/
 essays/*
+archives/*
 
 /*.xlsx
 /*.csv
@@ -19,3 +20,4 @@ essays/*
 
 # settings
 .vscode/
+
