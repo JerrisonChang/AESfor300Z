@@ -1,11 +1,12 @@
 
-import glob
-
-import os
-
 import docx
-import PyPDF2
+
+import glob
+import os
 import re
+from typing import Tuple, List
+
+from helperscripts import format_extractor
 
 class DocxReader():
     def __init__(self, path_to_essay_folder:str):
@@ -13,7 +14,7 @@ class DocxReader():
 
     def get_netID_to_structured_content(self) -> dict:
         result = {}
-        for i in self.get_dox_assignment_list():
+        for i in self.get_docx_assignment_list():
             netID = self.get_netID_from_file_path(i)
             structured_essay = self.read_docx_and_structure(i)
 
@@ -82,16 +83,55 @@ class DocxReader():
             
         return (title, body, references)
 
-    def get_dox_assignment_list(self) -> list:
+    def get_docx_assignment_list(self) -> list:
         result = glob.glob(f"{self.essay_folder}/*.docx")
         result = list(filter(lambda x: '~$' not in x,result))
         return result
 
+    def extract_effort_feature(self, document: docx.document.Document) -> Tuple:
+        """ return (line space portion, justification portion, indentation portion, font portion)
+        """
+        line_spaces, justifications, indentations, font_portion= [], [], [], []
+        # target_values= {
+        #     "line_space": 1.15,
+        #     "justitification": None,
+        #     "indentation": 0.5,
+        #     "font": "Times New Roman"
+        # }
+
+        for i in document.paragraphs:
+            pf = i.paragraph_format
+            first_chararacter_is_tab = i.text[0] == "\t" if len(i.text) > 0 else False
+            
+            line_spaces.append(True if pf.line_spacing == 1.15 else False)
+            justifications.append(True if pf.alignment == None else False)
+            
+            if pf.first_line_indent:
+                indentations.append(True if pf.first_line_indent.inches == 0.5 else False)
+            else:
+                indentations.append(first_chararacter_is_tab)
+            
+            font_portion.append(True if format_extractor.get_majority_font_name(i)=="Times New Roman" else False)
+            
+        result = tuple( get_portion_of_true(i) for i in (line_spaces, justifications, indentations, font_portion) )
+        return result
+
+    
+def get_portion_of_true(array: List[bool]) -> float:
+    trues = sum([1 for i in array if i is True])
+    return trues/len(array)
 
 
 if __name__=="__main__":
-    DIR = 'ICSI-300Z_Assignment1_Normative_Ethics'
-    test_pdf = 'Assignment 1. Normative Ethics_ec529919_attempt_2020-09-15-06-45-50_EvonChoong_300Z_Assignment1.pdf'
+    DIR = './essays/hw2_fa20'
+    docx_name = "Assignment 2. Privacy_as465988_attempt_2020-10-05-19-56-31_Privacy.docx"
+
+    reader = DocxReader(DIR)
+    # print(os.getcwd())
+    document = docx.Document(f"{DIR}/{docx_name}")
+    features = reader.extract_effort_feature(document)
+    print(f"{features}")
+    # test_pdf = 'Assignment 1. Normative Ethics_ec529919_attempt_2020-09-15-06-45-50_EvonChoong_300Z_Assignment1.pdf'
     # first_file_path = get_docx_assignment_list(DIR)[0]
     # content = read_docx_content(first_file_path)
     # print(f'\n{get_netID(first_file_path)}')
