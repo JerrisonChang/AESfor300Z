@@ -39,6 +39,7 @@ class DocxReader():
         assert ext == '.docx'
 
         document = docx.Document(file_path)
+        effort_feature_vectors = self.extract_effort_feature(document)
         paragraphs = [p.text.strip() for p in document.paragraphs if p.text.strip() != '']
         
         content_start_index: int
@@ -81,7 +82,7 @@ class DocxReader():
             body = '\n'.join(paragraphs)
             references = ''
             
-        return (title, body, references)
+        return (title, body, references, *effort_feature_vectors)
 
     def get_docx_assignment_list(self) -> list:
         result = glob.glob(f"{self.essay_folder}/*.docx")

@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 # from helperscripts
-import read_docx 
+from helperscripts.read_docx import DocxReader
 import collections
 import json
 ###
@@ -9,34 +9,43 @@ import json
 #
 ###
 def write_content_into_gradebook(directory, gradebook_path, output_name):
-    netID2content = read_docx.get_netID2content(directory)
+    netID2content = DocxReader.get_netID2content(directory)
     grade_book_df = pd.read_excel(gradebook_path, 1, engine='openpyxl')
     grade_book_df['original content'] = grade_book_df.apply(lambda row: netID2content.get(row['Username'], ''), axis = 1)
     grade_book_df.to_csv(output_name)
 
-def append_essay_content_to_gb(base_gradebook: 'df', hw_dir) -> 'df':
-    netID2content = read_docx.get_netID2content(hw_dir)
+def append_essay_content_to_gb(base_gradebook: pd.DataFrame, hw_dir) -> pd.DataFrame:
+    netID2content = DocxReader.get_netID2content(hw_dir)
     base_gradebook['essay content'] = base_gradebook.apply(lambda row: netID2content.get(row['Username'], ''), axis=1)
 
     return base_gradebook
 
-def append_structured_essay_content_to_gb(base_gradebook: 'df', hw_dir) -> 'df':
-    netID2structured_essay = read_docx.get_netID2structuredContent(hw_dir)
-    empty_essay = ('','','')
-    base_gradebook['title page'] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'],empty_essay)[0], axis=1)
-    base_gradebook['essay body'] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'],empty_essay)[1], axis=1)
-    base_gradebook['essay refs'] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'],empty_essay)[2], axis=1)
+def append_structured_essay_content_to_gb(base_gradebook: pd.DataFrame, hw_dir) -> pd.DataFrame:
+    reader = DocxReader(hw_dir)
+    netID2structured_essay = reader.get_netID_to_structured_content()
+    empty_essay = ('','','', 0, 0, 0 ,0)
+    
+    features = ['title page', 'essay body', 'essay refs', 'line space', 'justification', 'indentation', 'font portion']
+    for i, feature in enumerate(features):
+        base_gradebook[feature] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'], empty_essay)[i], axis=1 )
+    # base_gradebook['title page'] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'],empty_essay)[0], axis=1)
+    # base_gradebook['essay body'] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'],empty_essay)[1], axis=1)
+    # base_gradebook['essay refs'] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'],empty_essay)[2], axis=1)
+    # base_gradebook['line space'] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'],empty_essay)[3], axis=1)
+    # base_gradebook['justification'] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'],empty_essay)[4], axis=1)
+    # base_gradebook['indentation'] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'],empty_essay)[5], axis=1)
+    # base_gradebook['font portion'] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'],empty_essay)[6], axis=1)
     base_gradebook['word count'] = base_gradebook.apply(lambda row: len(row['essay body'].split(' ')) if len(row['essay body'].split(' '))>1 else 0, axis=1)
     base_gradebook['bibliography'] = base_gradebook.apply(lambda row: "", axis=1)
 
     return base_gradebook
 
-def single_out_category(base_gradebook: 'df', category: str) -> 'df':
+def single_out_category(base_gradebook: pd.DataFrame, category: str) -> pd.DataFrame:
     assert category in base_gradebook.columns
     export_gb = base_gradebook.filter(items = ['Username', category, 'essay content', 'title page', 'essay body', 'essay refs'])
     return export_gb
 
-def convert_pts_to_rank(singled_cat: 'df', max_pts: str) -> 'df':
+def convert_pts_to_rank(singled_cat: pd.DataFrame, max_pts: str) -> pd.DataFrame:
     def determin_rank(scheme, point: float):
         for i, x in enumerate(scheme):
             min_, max_ = x
@@ -52,7 +61,7 @@ def convert_pts_to_rank(singled_cat: 'df', max_pts: str) -> 'df':
     singled_cat.iloc[:,1] = singled_cat.iloc[:,1].apply(lambda value: determin_rank(scheme, value))
     return singled_cat
 
-def split_train_test(single_cat: 'df', ratio= 0.8) -> tuple:
+def split_train_test(single_cat: pd.DataFrame, ratio= 0.8) -> tuple:
     assert ratio < 1
     # filter out row where essays are empty but get high scores (pdfs)
     # filtered_df = single_cat.iloc[:,1].where(lambda x: x != 1) & single_cat.iloc[:,2] == ""
@@ -76,7 +85,7 @@ def split_train_test(single_cat: 'df', ratio= 0.8) -> tuple:
 
     return (concat_train, concat_test)
     
-def split_data_by_categories(dataFrame: 'df', hw_num: str, semester_code: str):
+def split_data_by_categories(dataFrame: pd.DataFrame, hw_num: str, semester_code: str):
     """
     This function will be called for creating training gradebook for each categories and put them in corresponding folders.
     """

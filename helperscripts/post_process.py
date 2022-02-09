@@ -2,14 +2,15 @@ import pandas as pd
 
 class PostProcessor():
     def __init__(self, input_file, rank2score: dict = None):
-        self.main_gradebook = pd.read_excel(input_file,sheet_name=0,engine='openpyxl')
+        self.main_gradebook = pd.read_excel(input_file,sheet_name=0,engine='openpyxl',header=0)
         self.main_gradebook['comments ID'].fillna('',inplace=True)
+        # print(self.main_gradebook[:3])
 
         try:
-            self.comment_bank: 'df' = pd.read_excel(input_file,sheet_name=1, engine='openpyxl',index_col=0)
+            self.comment_bank: pd.DataFrame = pd.read_excel(input_file,sheet_name=1, engine='openpyxl',index_col=0)
             self.has_comment: bool = True
         except:
-            self.comment_bank: 'df' = pd.DataFrame()
+            self.comment_bank: pd.DataFrame = pd.DataFrame()
             self.has_comment: bool = False
             print(f"No second sheets!")
         
@@ -56,12 +57,12 @@ class PostProcessor():
             bibliography = "bibliography: 0/10pts;"
         quality_of_writing = "quality of writing: "+ str(self.rank2score["10pts"][int(row['quality of writing_prediction']-1)]) + "/10pts;"
 
-        if self.has_comment:
-            personalized_comments = self.get_comments(str(row['comments ID']))
+        # if self.has_comment:
+        personalized_comments = "" #self.get_comments(str(row['comments ID']))
 
-            if not pd.isna(row["customized comment"]):
-                customized_comment = "<br/>\n".join(str(row["customized comment"]).split("\n")) # if row["customized comment"] != None
-                personalized_comments += "<br/>\n"+customized_comment
+        if not pd.isna(row["customized comment"]):
+            customized_comment = "<br/>\n".join(str(row["customized comment"]).split("\n")) # if row["customized comment"] != None
+            personalized_comments += "<br/>\n"+customized_comment
 
         return '<br/>\n'.join([content,research,organization,communication,efforts, bibliography, quality_of_writing, personalized_comments])
         # return '<br/>\n'.join([content,research,organization,communication,efforts, bibliography, quality_of_writing])
