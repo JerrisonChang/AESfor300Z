@@ -6,7 +6,10 @@ predict_results/
 trainedmodel/
 ICSI-300*/
 essays/*
+gradebook/*
 archives/*
+classifier maker/*
+practice/*
 
 /*.xlsx
 /*.csv
