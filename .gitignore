@@ -22,5 +22,6 @@ practice/*
 */__pycache__/*
 
 # settings
-.vscode/
+.vscode/.ropeproject/
+.vscode/settings.json
 
