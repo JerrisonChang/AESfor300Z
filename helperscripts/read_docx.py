@@ -6,7 +6,7 @@ import os
 import re
 from typing import Tuple, List
 
-from helperscripts import format_extractor
+from featureextraction import format_extractor
 
 class DocxReader():
     def __init__(self, path_to_essay_folder:str):
