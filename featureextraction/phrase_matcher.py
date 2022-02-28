@@ -5,6 +5,7 @@ class OpinionMatcher:
     
     def match_against(self, text: str) -> bool:
         for phrase in self.phrases_to_check:
-            pass
+            if phrase in text:
+                return True
 
         return False

@@ -21,6 +21,9 @@ practice/*
 # cache files
 */__pycache__/*
 
+# test files
+*.test.py
+
 # settings
 .vscode/.ropeproject/
 .vscode/settings.json
