@@ -39,7 +39,8 @@ class DocxReader():
         assert ext == '.docx'
 
         document = docx.Document(file_path)
-        effort_feature_vectors = self.extract_effort_feature(document)
+        effort_feature_vectors = (0,0,0,0) # disable it for now
+        # effort_feature_vectors = self.extract_effort_feature(document)
         paragraphs = [p.text.strip() for p in document.paragraphs if p.text.strip() != '']
         
         content_start_index: int
