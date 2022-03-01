@@ -116,8 +116,15 @@ def split_data_by_categories(dataFrame: pd.DataFrame, hw_num: str, semester_code
 
             data.to_csv(f"{output_dir}/{hw_num}_{name}_structured.csv")
 
-def create_predict_templates(path_to_blank_gb: str, path_to_essays: str, output_csv:str):
-    base_gb = pd.read_excel(path_to_blank_gb, sheet_name=0, engine='openpyxl').fillna(0)
+def create_predict_templates(path_to_blank_gb: str, path_to_essays: str, output_csv:str, input_format: str = "xlsx"):
+    if input_format == "xlsx":
+        df = pd.read_excel(path_to_blank_gb, sheet_name=0, engine='openpyxl').fillna(0)
+    elif input_format == "csv":
+        df = pd.read_csv(path_to_blank_gb).fillna(0)
+    else:
+        raise Exception("Type not supported")
+    
+    base_gb = df.loc[:, "Last Name": "Username"].copy()
     base_gb = append_structured_essay_content_to_gb(base_gb, path_to_essays)
     base_gb["comments ID"] = ""
     base_gb["customized comment"] = ""
