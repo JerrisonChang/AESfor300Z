@@ -119,6 +119,8 @@ def split_data_by_categories(dataFrame: pd.DataFrame, hw_num: str, semester_code
 def create_predict_templates(path_to_blank_gb: str, path_to_essays: str, output_csv:str):
     base_gb = pd.read_excel(path_to_blank_gb, sheet_name=0, engine='openpyxl').fillna(0)
     base_gb = append_structured_essay_content_to_gb(base_gb, path_to_essays)
+    base_gb["comments ID"] = ""
+    base_gb["customized comment"] = ""
     base_gb.to_csv(output_csv)
 
 def create_train_csv(hw_code: str, semester_code: str):

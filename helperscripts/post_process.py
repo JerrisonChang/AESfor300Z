@@ -29,7 +29,7 @@ class PostProcessor():
             "organization": ("organization_prediction", "15pts"),
             "communication": ("communication_prediction", "15pts"),
             "efforts": ("efforts_prediction", "10pts"),
-            "bibliography": ("bibliography_prediction", "10pts"),
+            "bibliography": ("bibliography", "10pts"), # bibliography doesn't have prediction yet
             "quality of writing": ("quality of writing_prediction", "10pts")
         }
 
