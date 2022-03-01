@@ -17,7 +17,7 @@
 Python 3, and the dependent packages can be found in `requirements.txt` file
 
 - LighSIDE <br/>
-This is an open source text analysis software, the file has been included in this folder, but you can also download it [here](http://ankara.lti.cs.cmu.edu/side/)
+This is an open source text analysis software; you can also download it [here](http://ankara.lti.cs.cmu.edu/side/)
 
 # System Pipeline
 <p align="center">
