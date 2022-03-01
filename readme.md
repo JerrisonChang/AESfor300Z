@@ -1,3 +1,17 @@
+# Table of Content
+1. [Requirements](#requirements)
+
+2. [System Pipline](#system-pipeline)
+
+3. [Prequesist](#prerequisites)
+    * [Download Roster File](#download-roster-file-from-blackboard)
+    * [Download Assignment Files](#download-assignment-files)
+    * Organize your files
+4. [Folder Explanation](#folder-explenation)
+
+5. [How to use LightSIDE to predict scores](#how-to-use-lightside-to-predict-scores)
+
+
 # Requirements
 - Python 3 <br/>
 Python 3, and the dependent packages can be found in `requirements.txt` file
