@@ -1,4 +1,7 @@
+from re import M
 import pandas as pd
+
+from operator import itemgetter
 
 class PostProcessor():
     def __init__(self, input_file, rank2score: dict = None):
@@ -19,6 +22,16 @@ class PostProcessor():
             "15pts": [3, 8, 13 ,15],
             "10pts": [2, 5, 9, 10]
         } if rank2score == None else rank2score
+
+        self.cat2_col_name_maxpoints = {
+            "content": ("content_prediction", "20pts"),
+            "research": ("research_prediction", "20pts"),
+            "organization": ("organization_prediction", "15pts"),
+            "communication": ("communication_prediction", "15pts"),
+            "efforts": ("efforts_prediction", "10pts"),
+            "bibliography": ("bibliography_prediction", "10pts"),
+            "quality of writing": ("quality of writing_prediction", "10pts")
+        }
 
     def process_to_csv(self, output_file_path:str):
         final_score = self.main_gradebook.apply(self.calculate_final_score, axis=1)
@@ -41,57 +54,51 @@ class PostProcessor():
 
             return '<br/>\n'.join(comment_content)
 
-    def write_comment(self, row) -> str:
+    def write_comment(self, row: pd.Series) -> str:
         '''
         This function is used within pandas' apply function for each row in a ranked gradebook.
         It will convert the rank into scores and return the string with breakdowns and personalized comments if provided. 
         '''
-        content = "content: " + str(self.rank2score["20pts"][int(row['content_prediction']-1)]) + "/20pts;"
-        research = "research: " + str(self.rank2score["20pts"][int(row['research_prediction']-1)]) + "/20pts;"
-        organization = "organization: " + str(self.rank2score["15pts"][int(row['organization_prediction']-1)]) + "/15pts;"
-        communication = "communication: " + str(self.rank2score["15pts"][int(row['communication_prediction']-1)]) + "/15pts;"
-        efforts = "efforts: " + str(self.rank2score["10pts"][int(row['efforts_prediction']-1)]) + "/10pts;"
-        try:
-            bibliography = "bibliography: "+ str(self.rank2score["10pts"][int(row['bibliography']-1)]) + "/10pts;"
-        except:
-            bibliography = "bibliography: 0/10pts;"
-        quality_of_writing = "quality of writing: "+ str(self.rank2score["10pts"][int(row['quality of writing_prediction']-1)]) + "/10pts;"
+        SCORE_MAP = self.rank2score
+        result = []
+        for category, (col_name, max_point) in self.cat2_col_name_maxpoints.items():
+            try:
+                index = int(row[col_name]-1)
+                score = str(SCORE_MAP[max_point][index]) if index >= 0 else "0"
+            except:
+                score = "0"
+            result.append(f"{category}: {score}/{max_point}")
 
-        # if self.has_comment:
         personalized_comments = "" #self.get_comments(str(row['comments ID']))
 
         if not pd.isna(row["customized comment"]):
             customized_comment = "<br/>\n".join(str(row["customized comment"]).split("\n")) # if row["customized comment"] != None
             personalized_comments += "<br/>\n"+customized_comment
 
-        return '<br/>\n'.join([content,research,organization,communication,efforts, bibliography, quality_of_writing, personalized_comments])
-        # return '<br/>\n'.join([content,research,organization,communication,efforts, bibliography, quality_of_writing])
+        return '<br/>\n'.join( result +  [personalized_comments])
 
     def calculate_final_score(self, row) -> float:
         """
         This function is used within pandas' apply function for a ranked gradebook.
         It will convert the ranks into scores and return the sum of the scores
         """
-        try:
-            content = self.rank2score["20pts"][int(row['content_prediction'])-1]
-            research = self.rank2score["20pts"][int(row['research_prediction'])-1]
-            organization = self.rank2score["15pts"][int(row['organization_prediction'])-1]
-            communication = self.rank2score["15pts"][int(row['communication_prediction'])-1]
-            efforts = self.rank2score["10pts"][int(row['efforts_prediction'])-1]
+
+        SCORE_MAP = self.rank2score
+        scores = []
+        for col_name, max_point in self.cat2_col_name_maxpoints.values():
             try:
-                bibliography = self.rank2score["10pts"][int(row['bibliography'])-1]
+                index = int(row[col_name]-1)
+                score = SCORE_MAP[max_point][index] if index >= 0 else 0
             except:
-                bibliography = 0
-            quality_of_writing = self.rank2score["10pts"][int(row['quality of writing_prediction'])-1]
+                score = 0
 
-            result = sum([content,research,organization,communication,efforts, bibliography, quality_of_writing])
-
-            if result == 20: # all categories are 1 -> did not turn in the assignment
-                return 0
-            else:
-                return sum([content,research,organization,communication,efforts, bibliography, quality_of_writing])
-        except:
+            scores.append(score)
+        
+        result = sum(scores)
+        if result == 20: # all categories are 1 -> did not turn in the assignment
             return 0
+        else:
+            return result
 
 if __name__ == "__main__":
     settings = {
@@ -99,5 +106,8 @@ if __name__ == "__main__":
         'output_file': './hw4_s21 grades with comments v2.csv'
     }
 
-    processor = PostProcessor(settings['input_file'])
-    processor.process_to_csv(settings['output_file'])
+    # processor = PostProcessor(settings['input_file'])
+    # processor.process_to_csv(settings['output_file'])
+
+    df = pd.read_excel("./gradebook/hw1_sp22/hw1_sp22_gradebook_2.xlsx", sheet_name=0, engine='openpyxl', header=0)
+    print(df)
