@@ -2,7 +2,7 @@ from re import M
 import pandas as pd
 
 from operator import itemgetter
-
+from typing import Dict, Tuple, List
 class PostProcessor():
     def __init__(self, input_file, rank2score: dict = None):
         self.main_gradebook = pd.read_excel(input_file,sheet_name=0,engine='openpyxl',header=0)
@@ -17,13 +17,13 @@ class PostProcessor():
             self.has_comment: bool = False
             print(f"No second sheets!")
         
-        self.rank2score = {
+        self.rank2score: Dict[str, List[int]] = {
             "20pts": [5, 11, 17 ,20],
             "15pts": [3, 8, 13 ,15],
             "10pts": [2, 5, 9, 10]
         } if rank2score == None else rank2score
 
-        self.cat2_col_name_maxpoints = {
+        self.cat2_col_name_maxpoints: Dict[str, Tuple[str,str]] = {
             "content": ("content_prediction", "20pts"),
             "research": ("research_prediction", "20pts"),
             "organization": ("organization_prediction", "15pts"),
@@ -77,7 +77,7 @@ class PostProcessor():
 
         return '<br/>\n'.join( result +  [personalized_comments])
 
-    def calculate_final_score(self, row) -> float:
+    def calculate_final_score(self, row: pd.Series) -> float:
         """
         This function is used within pandas' apply function for a ranked gradebook.
         It will convert the ranks into scores and return the sum of the scores
@@ -103,11 +103,11 @@ class PostProcessor():
 if __name__ == "__main__":
     settings = {
         'input_file': './hw4_s21_gradebook.xlsx',
-        'output_file': './hw4_s21 grades with comments v2.csv'
+        'output_file': './hw4_s21 grades with comments v3.csv'
     }
 
-    # processor = PostProcessor(settings['input_file'])
-    # processor.process_to_csv(settings['output_file'])
+    processor = PostProcessor(settings['input_file'])
+    processor.process_to_csv(settings['output_file'])
 
-    df = pd.read_excel("./gradebook/hw1_sp22/hw1_sp22_gradebook_2.xlsx", sheet_name=0, engine='openpyxl', header=0)
-    print(df)
+    # df = pd.read_excel("./gradebook/hw1_sp22/hw1_sp22_gradebook_2.xlsx", sheet_name=0, engine='openpyxl', header=0)
+    # print(df)
