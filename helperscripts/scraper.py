@@ -32,7 +32,7 @@ def get_ID2EssayStructured(essay_folder: str) -> Dict[str, EssayStructured]:
 
 def get_df(id2EssayStructured: Dict[str, EssayStructured]) -> pd.DataFrame:
     nested_list = [[key, essay.get_title(), essay.get_body(), essay.get_reference(), essay.get_word_count()] for key, essay in id2EssayStructured.items()]
-    df = pd.DataFrame(nested_list, columns=["Username", "Title", "Body", "Reference", "Word Count"])
+    df = pd.DataFrame(nested_list, columns=["Username", "title", "essayBody", "reference", "Word Count"])
 
     return df
     
