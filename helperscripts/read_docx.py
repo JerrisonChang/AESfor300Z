@@ -33,7 +33,17 @@ class EssayStructured:
         for i in self.reference:
             print(i.text)
 
+    def get_title(self): 
+        return '\n'.join([i.text.strip() for i in self.title])
 
+    def get_body(self): 
+        return '\n'.join([i.text.strip() for i in self.body])
+    
+    def get_reference(self): 
+        return '\n'.join([i.text.strip() for i in self.reference])
+
+    def get_word_count(self):
+        return sum([len(i.text.split(" ")) for i in self.body])
 
 class DocxReader():
     def __init__(self, path_to_essay_folder:str):
@@ -113,7 +123,7 @@ class DocxReader():
         head, ext = os.path.splitext(file_path)
         assert ext == '.docx'
 
-        document = docx.Document(file_path)
+        document: Document = docx.Document(file_path)
         effort_feature_vectors = (0,0,0,0) # disable it for now
         # effort_feature_vectors = self.extract_effort_feature(document)
         paragraphs = [p.text.strip() for p in document.paragraphs if p.text.strip() != '']
