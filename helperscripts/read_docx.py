@@ -1,12 +1,39 @@
 
 import docx
+from docx.text.paragraph import Paragraph
+from docx.document import Document
 
 import glob
 import os
 import re
 from typing import Tuple, List
+from dataclasses import dataclass
 
 from featureextraction import format_extractor
+
+@dataclass
+class EssayStructured:
+    raw_doc: Document
+    title: List[Paragraph]
+    body: List[Paragraph]
+    reference: List[Paragraph]
+    others: List[Paragraph] = None
+
+    def preview(self,):
+        """This is for debugging purposes"""
+        print(f">>>TITLE")
+        for i in self.title:
+            print(i.text)
+
+        print(f"\n>>>BODY")
+        for i in self.body:
+            print(i.text[:80], "...")
+        
+        print(f"\n>>>REFERENCE")
+        for i in self.reference:
+            print(i.text)
+
+
 
 class DocxReader():
     def __init__(self, path_to_essay_folder:str):
@@ -31,6 +58,54 @@ class DocxReader():
             result = match_result.group()    
         return result
     
+    def read_document(self, file_path: str) -> Document:
+        """This method return the raw xml format of the docx file"""
+        _, ext = os.path.splitext(file_path)
+        assert ext == ".docx"
+        
+        document = docx.Document(file_path)
+        
+        return document
+
+    def parse_document_into_sections(self, document: Document) -> EssayStructured:
+        paragraphs = document.paragraphs
+        section = {
+            "title": [],
+            "body": [],
+            "reference": [],
+            "others": []
+        }
+        
+        found_content_start = False
+        found_ref_start = False
+
+        for para in paragraphs:
+            word_count = len(para.text.split(' '))
+            is_empty_paragraph = re.match(r'^\s*$',para.text) != None
+            if is_empty_paragraph: continue # skip empty paragraphs
+
+            if not found_content_start:
+                if word_count >= 45 or para.text.lower() in ['abstract']:
+                    found_content_start = True
+                    section['body'].append(para)
+                else:
+                    section['title'].append(para)
+            elif not found_ref_start:
+                if word_count <= 3:
+                    is_page_number = re.match(r'.*\d\s?$', para.text) != None # page number e.g. "page 1" or "Bobby 1"
+                    is_other_title = para.text.lower() in ['introduction', 'conclusion', 'abstract']
+                    if is_page_number or is_other_title:
+                        continue
+                
+                    found_ref_start = True
+                    section['reference'].append(para)
+                else:
+                    section['body'].append(para)
+            else:
+                section['reference'].append(para)
+        
+        return EssayStructured(document, **section)
+
     def read_docx_and_structure(self, file_path: str) -> tuple:
         """
         This method will disect an essay as 'title page', 'body', and 'bibliography' and return them
