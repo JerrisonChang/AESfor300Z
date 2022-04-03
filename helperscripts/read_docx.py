@@ -1,27 +1,33 @@
 
+from unicodedata import category
 import docx
 from docx.text.paragraph import Paragraph
 from docx.document import Document
+import pandas as pd
 
 import glob
 import os
 import re
-from typing import Tuple, List
-from dataclasses import dataclass
+import pickle
+from typing import Tuple, List, Dict
+from dataclasses import dataclass, field
 
 from featureextraction import format_extractor
 
 @dataclass
 class EssayStructured:
     raw_doc: Document
+    file_name: str
+    student_id: str
     title: List[Paragraph]
     body: List[Paragraph]
     reference: List[Paragraph]
     others: List[Paragraph] = None
+    scores: Dict[str, int] = field(default_factory= dict())
 
     def preview(self,):
         """This is for debugging purposes"""
-        print(f">>>TITLE")
+        print(f"\n>>>TITLE")
         for i in self.title:
             print(i.text)
 
@@ -45,15 +51,35 @@ class EssayStructured:
     def get_word_count(self):
         return sum([len(i.text.split(" ")) for i in self.body])
 
-class DocxReader():
-    def __init__(self, path_to_essay_folder:str):
-        self.essay_folder = path_to_essay_folder
+    def attach_score(self, scores: Dict[str, int]):
+        self.scores = scores
 
-    def get_netID_to_structured_content(self) -> dict:
+@dataclass
+class DocumentBins():
+    essays: List[EssayStructured]
+    
+    def attach_scores(self, scores: pd.DataFrame):
+        categories = ['content', 'research', 'communication', 'organization', 'bibliography', 'efforts', 'quality of writing']
+        
+    def save_to_disk(self, path: str):
+        with open(path, 'w') as f:
+            pickle.dump(self.essays, f)
+
+    @staticmethod
+    def load_from_saved(path: str):
+        with open(path, 'r') as f:
+            return DocumentBins(pickle.load(f))
+
+class DocxReader():
+    def __init__(self, *args, **kargs):
+        pass
+
+    def get_netID_to_structured_content(self) -> Dict[str, EssayStructured]:
         result = {}
         for i in self.get_docx_assignment_list():
             netID = self.get_netID_from_file_path(i)
-            structured_essay = self.read_docx_and_structure(i)
+            # structured_essay = self.read_docx_and_structure(i)
+            structured_essay = self.parse_document_into_sections(i)
 
             result[netID] = structured_essay
 
@@ -77,7 +103,10 @@ class DocxReader():
         
         return document
 
-    def parse_document_into_sections(self, document: Document) -> EssayStructured:
+    def parse_document_into_sections(self, path: str) -> EssayStructured:
+        document = self.read_document(path)
+        file_name = os.path.split(path)[-1]
+        student_id = re.search(r'\w{2}\d{6}', file_name).group()
         paragraphs = document.paragraphs
         section = {
             "title": [],
@@ -114,7 +143,7 @@ class DocxReader():
             else:
                 section['reference'].append(para)
         
-        return EssayStructured(document, **section)
+        return EssayStructured(document, file_name, student_id, **section)
 
     def read_docx_and_structure(self, file_path: str) -> tuple:
         """
@@ -170,8 +199,9 @@ class DocxReader():
             
         return (title, body, references, *effort_feature_vectors)
 
-    def get_docx_assignment_list(self) -> list:
-        result = glob.glob(f"{self.essay_folder}/*.docx")
+    @staticmethod
+    def get_docx_assignment_list(path_to_essay_folder: str) -> List[str]:
+        result = glob.glob(f"{path_to_essay_folder}/*.docx")
         result = list(filter(lambda x: '~$' not in x,result))
         return result
 
