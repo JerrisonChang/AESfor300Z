@@ -1,4 +1,4 @@
-
+from __future__ import annotations
 from unicodedata import category
 import docx
 from docx.text.paragraph import Paragraph
@@ -16,14 +16,14 @@ from featureextraction import format_extractor
 
 @dataclass
 class EssayStructured:
-    raw_doc: Document
+    # raw_doc: Document
     file_name: str
     student_id: str
-    title: List[Paragraph]
-    body: List[Paragraph]
-    reference: List[Paragraph]
-    others: List[Paragraph] = None
-    scores: Dict[str, int] = field(default_factory= dict())
+    title: List[Paragraph] = field(default_factory=list)
+    body: List[Paragraph] = field(default_factory=list)
+    reference: List[Paragraph] = field(default_factory=list)
+    others: List[Paragraph] = field(default_factory=list)
+    scores: Dict[str, int] = field(default_factory=dict)
 
     def preview(self,):
         """This is for debugging purposes"""
@@ -51,24 +51,52 @@ class EssayStructured:
     def get_word_count(self):
         return sum([len(i.text.split(" ")) for i in self.body])
 
+    def to_list(self) -> List[str]:
+        return [self.file_name, self.student_id, *[self.para_to_text(i) for i in [self.title, self.body, self.reference]]]
+
+    def para_to_text(self, para: List[Paragraph]) -> str:
+        return '\n'.join(p.text for p in para)
+
     def attach_score(self, scores: Dict[str, int]):
         self.scores = scores
 
 @dataclass
-class DocumentBins():
+class DocumentBin():
+    hw_code: str
+    semester_code: str
     essays: List[EssayStructured]
     
     def attach_scores(self, scores: pd.DataFrame):
         categories = ['content', 'research', 'communication', 'organization', 'bibliography', 'efforts', 'quality of writing']
+        for essay in self.essays:
+            grades = {j: scores.loc[essay.student_id, j] for j in categories}
+            essay.attach_score(grades)
         
+
+    def to_csv(self, path: str, encoding: str='utf-8'):
+        array2d = [i.to_list() for i in self.essays]
+        df = pd.DataFrame(array2d, columns=['file_name', 'netID', 'title', 'body', 'reference'])
+        df.to_csv(path, encoding=encoding)
+    
     def save_to_disk(self, path: str):
-        with open(path, 'w') as f:
-            pickle.dump(self.essays, f)
+        *_, file_name = os.path.split(path)
+        has_semester_code = re.search(r'(?:fa|sp|su)\d{2}', file_name)
+        has_hw_code = re.search(r"hw\d", file_name)
+        if not has_semester_code:
+            raise Exception(f"file name does not have semester code ({file_name})")
+        if not has_hw_code:
+            raise Exception(f"file name does not have hw code ({file_name})")
+        
+        essays = self.essays
+        with open(path, 'wb') as f:
+            pickle.dump(essays, f)
 
     @staticmethod
-    def load_from_saved(path: str):
-        with open(path, 'r') as f:
-            return DocumentBins(pickle.load(f))
+    def load_from_saved(path: str) -> DocumentBin:
+        *_, file_name = os.path.split(path)
+        hw_code, semester_code, *_ = file_name.split('_')
+        with open(path, 'rb') as f:
+            return DocumentBin(semester_code, hw_code, pickle.load(f))
 
 class DocxReader():
     def __init__(self, *args, **kargs):
@@ -108,12 +136,7 @@ class DocxReader():
         file_name = os.path.split(path)[-1]
         student_id = re.search(r'\w{2}\d{6}', file_name).group()
         paragraphs = document.paragraphs
-        section = {
-            "title": [],
-            "body": [],
-            "reference": [],
-            "others": []
-        }
+        essayStructured = EssayStructured(file_name, student_id)
         
         found_content_start = False
         found_ref_start = False
@@ -126,9 +149,9 @@ class DocxReader():
             if not found_content_start:
                 if word_count >= 45 or para.text.lower() in ['abstract']:
                     found_content_start = True
-                    section['body'].append(para)
+                    essayStructured.body.append(para)
                 else:
-                    section['title'].append(para)
+                    essayStructured.title.append(para)
             elif not found_ref_start:
                 if word_count <= 3:
                     is_page_number = re.match(r'.*\d\s?$', para.text) != None # page number e.g. "page 1" or "Bobby 1"
@@ -137,13 +160,13 @@ class DocxReader():
                         continue
                 
                     found_ref_start = True
-                    section['reference'].append(para)
+                    essayStructured.reference.append(para)
                 else:
-                    section['body'].append(para)
+                    essayStructured.body.append(para)
             else:
-                section['reference'].append(para)
+                essayStructured.reference.append(para)
         
-        return EssayStructured(document, file_name, student_id, **section)
+        return essayStructured
 
     def read_docx_and_structure(self, file_path: str) -> tuple:
         """
