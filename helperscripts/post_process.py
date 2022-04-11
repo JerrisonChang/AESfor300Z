@@ -1,8 +1,8 @@
 from re import M
 import pandas as pd
+import os
+from typing import List, Dict, Tuple
 
-from operator import itemgetter
-from typing import Dict, Tuple, List
 class PostProcessor():
     def __init__(self, input_file, rank2score: dict = None):
         self.main_gradebook = pd.read_excel(input_file,sheet_name=0,engine='openpyxl',header=0)
@@ -102,12 +102,14 @@ class PostProcessor():
 
 if __name__ == "__main__":
     settings = {
-        'input_file': './hw4_s21_gradebook.xlsx',
-        'output_file': './hw4_s21 grades with comments v3.csv'
+        'input_file': './hw1_sp22.xlsx',
+        'output_file': './hw1_sp22 grades with comments v2.csv'
     }
 
-    processor = PostProcessor(settings['input_file'])
-    processor.process_to_csv(settings['output_file'])
+    # processor = PostProcessor(settings['input_file'])
+    # processor.process_to_csv(settings['output_file'])
+    df = pd.read_excel('./gradebook/hw1_sp22/hw1_sp22_gradebook_1.xlsx',sheet_name=1,engine='openpyxl',header=0)
+    print(df)
+    # path = './gradebook/hw1_sp22/hw1_sp22_gradebook_1.xlsx'
 
-    # df = pd.read_excel("./gradebook/hw1_sp22/hw1_sp22_gradebook_2.xlsx", sheet_name=0, engine='openpyxl', header=0)
-    # print(df)
+    # print(os.path.isfile(path))

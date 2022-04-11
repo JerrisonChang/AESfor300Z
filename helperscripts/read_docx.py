@@ -99,15 +99,15 @@ class DocumentBin():
             return DocumentBin(semester_code, hw_code, pickle.load(f))
 
 class DocxReader():
-    def __init__(self, *args, **kargs):
-        pass
+    def __init__(self, path_to_hw: str=None, *args, **kargs):
+        self.path_to_essays = path_to_hw
 
     def get_netID_to_structured_content(self) -> Dict[str, EssayStructured]:
         result = {}
-        for i in self.get_docx_assignment_list():
+        for i in self.get_docx_assignment_list(self.path_to_essays):
             netID = self.get_netID_from_file_path(i)
-            # structured_essay = self.read_docx_and_structure(i)
-            structured_essay = self.parse_document_into_sections(i)
+            structured_essay = self.read_docx_and_structure(i)
+            # structured_essay = self.parse_document_into_sections(i)
 
             result[netID] = structured_essay
 
@@ -175,9 +175,9 @@ class DocxReader():
         head, ext = os.path.splitext(file_path)
         assert ext == '.docx'
 
-        document: Document = docx.Document(file_path)
-        effort_feature_vectors = (0,0,0,0) # disable it for now
+        document = docx.Document(file_path)
         # effort_feature_vectors = self.extract_effort_feature(document)
+        effort_feature_vectors = []
         paragraphs = [p.text.strip() for p in document.paragraphs if p.text.strip() != '']
         
         content_start_index: int
@@ -263,8 +263,8 @@ def get_portion_of_true(array: List[bool]) -> float:
 
 
 if __name__=="__main__":
-    DIR = './essays/hw2_fa20'
-    docx_name = "Assignment 2. Privacy_as465988_attempt_2020-10-05-19-56-31_Privacy.docx"
+    DIR = './essays/hw2_sp22'
+    docx_name = "Assignment 2. Privacy_ac487426_attempt_2022-03-09-03-41-20_Privacy.docx"
 
     reader = DocxReader(DIR)
     # print(os.getcwd())
