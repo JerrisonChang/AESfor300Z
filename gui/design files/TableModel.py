@@ -24,3 +24,12 @@ class TableModel(QtCore.QAbstractTableModel):
             
             if orientation == Qt.Vertical:
                 return str(self._data.index[section])
+
+    def setData(self, index, value, role):
+        if role == Qt.EditRole:
+            self._data.iloc[index.row(), index.column()] = value
+            return True
+        return False
+
+    def flags(self, index):
+        return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
