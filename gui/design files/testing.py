@@ -244,14 +244,16 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
-        self.review__save_btn.clicked.connect(lambda: self.load_data(pd.DataFrame([[1,None],[2, None]], columns=["machine", "human"], index=["a", "b"])
-))
+        self.review__next_std_btn.clicked.connect(lambda: self.load_data(pd.DataFrame([[1,None],[2, None]], columns=["machine", "human"], index=["a", "b"]), './testing2.csv'))
+        self.review__save_btn.clicked.connect(lambda: self.currentModel.save())
+
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    def load_data(self, data: pd.DataFrame):
-        self.grade_table.setModel(TableModel(data))
+    def load_data(self, data: pd.DataFrame, path:str):
+        self.currentModel = TableModel(data, path)
+        self.grade_table.setModel(self.currentModel)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -304,12 +306,13 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
 
-    df = pd.read_csv('./gui/test.csv', index_col=0)
+    path = './gui/test.csv'
+    df = pd.read_csv(path, index_col=0)
 
     df2 = pd.DataFrame([[1,None],[2, None]], columns=["machine", "human"], index=["a", "b"])
 
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
-    ui.load_data(df)
+    ui.load_data(df, path)
     MainWindow.show()
     sys.exit(app.exec())
