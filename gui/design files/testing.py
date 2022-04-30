@@ -135,10 +135,14 @@ class Ui_MainWindow(object):
         self.std_name__label = QtWidgets.QLabel(self.Reviewing)
         self.std_name__label.setObjectName("std_name__label")
         self.verticalLayout_11.addWidget(self.std_name__label)
-        self.std_name__listView = QtWidgets.QListView(self.Reviewing)
-        self.std_name__listView.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.std_name__listView.setObjectName("std_name__listView")
-        self.verticalLayout_11.addWidget(self.std_name__listView)
+        # self.std_name__listView = QtWidgets.QListView(self.Reviewing)
+        # self.std_name__listView.setMaximumSize(QtCore.QSize(16777215, 30))
+        # self.std_name__listView.setObjectName("std_name__listView")
+        # self.verticalLayout_11.addWidget(self.std_name__listView)
+        self.std_name__comboBox = QtWidgets.QComboBox(self.Reviewing)
+        self.std_name__comboBox.setMaximumSize(QtCore.QSize(16777215, 30))
+        self.std_name__comboBox.setObjectName("std_name__comboBox")
+        self.verticalLayout_11.addWidget(self.std_name__comboBox)
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_11.addItem(spacerItem1)
         self.current_grade__label = QtWidgets.QLabel(self.Reviewing)
@@ -301,18 +305,14 @@ class Ui_MainWindow(object):
         def df_get_student_name(row: pd.Series):
             display = f"{row.get('First Name')} {row.get('Last Name')} ({row.get('Username')})"
             value = row.get('Username')
-            return {'display': display, 'value': value}
+            return (display, value)
         
         assert isinstance(self.tab2__master_df, pd.DataFrame)
-        model = QtGui.QStandardItemModel()
-        self.std_name__listView.setModel(model)
 
         student_names = self.tab2__master_df.apply( df_get_student_name, axis=1).to_list()
-        for i in student_names:
-            displayName = i.get('display')
-            item = QtGui.QStandardItem(displayName)
-            
-            model.appendRow(item)
+        std_dict = {key: val for key, val in student_names}
+        self.std_name__comboBox.clear()
+        self.std_name__comboBox.addItems(std_dict.keys())
 
         pass
 

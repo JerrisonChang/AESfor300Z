@@ -227,14 +227,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QListView" name="std_name__listView">
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>30</height>
-               </size>
-              </property>
-             </widget>
+             <widget class="QComboBox" name="comboBox"/>
             </item>
             <item>
              <spacer name="verticalSpacer_4">
