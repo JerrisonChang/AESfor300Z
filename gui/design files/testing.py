@@ -5,11 +5,19 @@
 # Created by: PyQt5 UI code generator 5.12
 #
 # WARNING! All changes made in this file will be lost!
+import sys
+import os
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from AI_part.generate_training import read_spread_sheet
 from TableModel import TableModel
 import pandas as pd
-import sys
+
+class ExtensionError(Exception):
+    pass
+
+class Tabs():
+    pass
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -250,10 +258,47 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.tab2_setup()
+
+    def tab2_setup(self):
+        browse_file_option = {
+            "title": "Select Predicted spread sheet",
+            "file_format": "Spread sheets (*.cvs *.xlsx)",
+            "action": self.load_predicted
+        }
+        self.select_predicted__browse_btn.clicked.connect(lambda: self.browse_file(self.select_predicted__line, browse_file_option))
 
     def load_data(self, data: pd.DataFrame, path:str):
         self.currentModel = TableModel(data, path)
         self.grade_table.setModel(self.currentModel)
+
+    def browse_file(self, target_line: QtWidgets.QLineEdit, options: dict):
+        TITLE = options.get("title", "Open file")
+        DEFAULT_PATH = options.get("default_path", "./")
+        FILE_FORMAT = options.get("file_format", None)
+        fname = QtWidgets.QFileDialog.getOpenFileName(self.centralwidget, TITLE, DEFAULT_PATH, FILE_FORMAT)
+        target_line.setText(fname[0])
+
+        if "actions" in options:
+            options.get("actions")()
+
+    def load_predicted(self):
+        fileName = self.select_predicted__line.text()
+        self.tab2__master_df = read_spread_sheet(fileName)
+
+        
+
+
+    def read_spread_sheet(path: str) -> pd.DataFrame:
+        _, extension = os.path.splitext(path)
+        
+        if extension == '.csv':
+            return pd.read_csv(path, encoding='utf-8')
+        elif extension == '.xlsx':
+            return pd.read_excel(path, engine="openpyxl")
+        else:
+            raise ExtensionError(f"Unsupported extension type; expected: .csv or .xlsx, got {extension}")
+
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
