@@ -263,7 +263,7 @@ class Ui_MainWindow(object):
     def tab2_setup(self):
         browse_file_option = {
             "title": "Select Predicted spread sheet",
-            "file_format": "Spread sheets (*.cvs *.xlsx)",
+            "file_format": "Spread sheets (*.csv *.xlsx)",
             "action": self.load_predicted
         }
         self.select_predicted__browse_btn.clicked.connect(lambda: self.browse_file(self.select_predicted__line, browse_file_option))
@@ -279,14 +279,20 @@ class Ui_MainWindow(object):
         fname = QtWidgets.QFileDialog.getOpenFileName(self.centralwidget, TITLE, DEFAULT_PATH, FILE_FORMAT)
         target_line.setText(fname[0])
 
-        if "actions" in options:
-            options.get("actions")()
+        if "action" in options:
+            options.get("action")()
 
     def load_predicted(self):
         fileName = self.select_predicted__line.text()
         self.tab2__master_df = read_spread_sheet(fileName)
 
-        
+        dlg = QtWidgets.QMessageBox()
+        dlg.setWindowTitle("success!")
+        dlg.setText("complete loading predicted spreadsheet")
+        button = dlg.exec()
+
+        if button == QtWidgets.QMessageBox.Ok:
+            print("OK!!")
 
 
     def read_spread_sheet(path: str) -> pd.DataFrame:
