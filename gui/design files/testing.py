@@ -273,6 +273,7 @@ class Ui_MainWindow(object):
             "action": self.load_predicted
         }
         self.select_predicted__browse_btn.clicked.connect(lambda: self.browse_file(self.select_predicted__line, browse_file_option))
+        self.std_name__comboBox.currentIndexChanged.connect(self.change_current_student)
 
     def load_data(self, data: pd.DataFrame, path:str):
         self.currentModel = TableModel(data, path)
@@ -310,12 +311,17 @@ class Ui_MainWindow(object):
         assert isinstance(self.tab2__master_df, pd.DataFrame)
 
         student_names = self.tab2__master_df.apply( df_get_student_name, axis=1).to_list()
-        std_dict = {key: val for key, val in student_names}
+        self.tab2__std_dict = {key: val for key, val in student_names}
         self.std_name__comboBox.clear()
-        self.std_name__comboBox.addItems(std_dict.keys())
+        self.std_name__comboBox.addItems(self.tab2__std_dict.keys())
 
         pass
 
+    def change_current_student(self):
+        text = self.std_name__comboBox.currentText()
+        netId = self.tab2__std_dict[text]
+        
+        pass
 
     def read_spread_sheet(path: str) -> pd.DataFrame:
         _, extension = os.path.splitext(path)
