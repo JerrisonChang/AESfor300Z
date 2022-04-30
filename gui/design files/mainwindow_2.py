@@ -82,9 +82,8 @@ class Ui_MainWindow(object):
     def browse_file(self, target_line: QtWidgets.QLineEdit, options: dict):
         TITLE = options.get("title", "Open file")
         DEFAULT_PATH = options.get("default_path", "./")
-        # FILE_FORMAT = options.get("file_format", "")
-        fname = QFileDialog.getOpenFileName(self.centralwidget, TITLE, DEFAULT_PATH, "csv (*.csv)")
-        print(fname)
+        FILE_FORMAT = options.get("file_format", None)
+        fname = QFileDialog.getOpenFileName(self.centralwidget, TITLE, DEFAULT_PATH, FILE_FORMAT)
         target_line.setText(fname[0])
 
 if __name__ == "__main__":

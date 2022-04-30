@@ -304,9 +304,15 @@ class Ui_MainWindow(object):
             return {'display': display, 'value': value}
         
         assert isinstance(self.tab2__master_df, pd.DataFrame)
+        model = QtGui.QStandardItemModel()
+        self.std_name__listView.setModel(model)
 
         student_names = self.tab2__master_df.apply( df_get_student_name, axis=1).to_list()
-        
+        for i in student_names:
+            displayName = i.get('display')
+            item = QtGui.QStandardItem(displayName)
+            
+            model.appendRow(item)
 
         pass
 

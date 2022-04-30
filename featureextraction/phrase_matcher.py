@@ -9,3 +9,7 @@ class OpinionMatcher:
                 return True
 
         return False
+
+
+class ConceptMatcher:
+    pass

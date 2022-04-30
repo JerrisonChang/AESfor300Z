@@ -1,18 +1,19 @@
-from helperscripts.read_docx import DocxReader
-from helperscripts.post_process import PostProcessor
 import helperscripts.write_into_gradebook as WIG
+from helperscripts.post_process import PostProcessor
 
 if __name__ == "__main__":
-    HOMEWORK_CODE = "hw1_fa21"
+    HOMEWORK_CODE = "hw1_s22"
     data_processing_settings = {
         'path_to_blank_gb': f'./gradebook/{HOMEWORK_CODE}/roster.xlsx',
+        # 'path_to_blank_gb': f'./test2.csv',
         'path_to_essays': f'./essays/{HOMEWORK_CODE}',
-        'output_csv': f'./gradebook/{HOMEWORK_CODE}/predict_template_1122_3.csv'
+        'output_csv': f'./gradebook/{HOMEWORK_CODE}/predict_template_1122_from_csv.csv',
+        # 'input_format': "csv"
     }
 
     post_processing_settings = {
         'input_file': f'./gradebook/{HOMEWORK_CODE}/{HOMEWORK_CODE}_gradebook_2.xlsx',
-        'output_file': f'./gradebook/{HOMEWORK_CODE}/{HOMEWORK_CODE} grades with comments.csv'
+        'output_file': f'./gradebook/{HOMEWORK_CODE}/{HOMEWORK_CODE} grades with comments _3.csv'
     }
 
     # uncomment this line for data preparation process

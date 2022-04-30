@@ -2,7 +2,6 @@ import pandas as pd
 import os
 # from helperscripts
 from helperscripts.read_docx import DocxReader
-import collections
 import json
 ###
 # This 
