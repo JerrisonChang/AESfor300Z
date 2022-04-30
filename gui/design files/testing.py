@@ -7,6 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 import sys
 import os
+# from operator import itemgetter
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from AI_part.generate_training import read_spread_sheet
@@ -262,6 +263,7 @@ class Ui_MainWindow(object):
 
     def tab2_setup(self):
         browse_file_option = {
+            "default_path": "./gradebook/final",
             "title": "Select Predicted spread sheet",
             "file_format": "Spread sheets (*.csv *.xlsx)",
             "action": self.load_predicted
@@ -286,13 +288,27 @@ class Ui_MainWindow(object):
         fileName = self.select_predicted__line.text()
         self.tab2__master_df = read_spread_sheet(fileName)
 
-        dlg = QtWidgets.QMessageBox()
-        dlg.setWindowTitle("success!")
-        dlg.setText("complete loading predicted spreadsheet")
-        button = dlg.exec()
+        self.get_student_name()
+        # dlg = QtWidgets.QMessageBox()
+        # dlg.setWindowTitle("success!")
+        # dlg.setText("complete loading predicted spreadsheet")
+        # button = dlg.exec()
 
-        if button == QtWidgets.QMessageBox.Ok:
-            print("OK!!")
+        # if button == QtWidgets.QMessageBox.Ok:
+        #     print("OK!!")
+
+    def get_student_name(self):
+        def df_get_student_name(row: pd.Series):
+            display = f"{row.get('First Name')} {row.get('Last Name')} ({row.get('Username')})"
+            value = row.get('Username')
+            return {'display': display, 'value': value}
+        
+        assert isinstance(self.tab2__master_df, pd.DataFrame)
+
+        student_names = self.tab2__master_df.apply( df_get_student_name, axis=1).to_list()
+        
+
+        pass
 
 
     def read_spread_sheet(path: str) -> pd.DataFrame:
