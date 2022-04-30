@@ -11,18 +11,20 @@ archives/*
 classifier maker/*
 practice/*
 
-/*.xlsx
-/*.csv
-/*.pdf
-/*.docx
+*.xlsx
+*.csv
+*.pdf
+*.docx
 
 .DS_Store
 
 # cache files
-*/__pycache__/*
+__pycache__/
 
 # test files
 *.test.py
+practice.py
+test.*
 
 # settings
 .vscode/.ropeproject/
