@@ -149,35 +149,6 @@ class Ui_MainWindow(object):
         self.current_grade__label.setObjectName("current_grade__label")
         self.verticalLayout_11.addWidget(self.current_grade__label)
         self.grade_table = QtWidgets.QTableView()
-        # self.grade_table = QtWidgets.QTableWidget(self.Reviewing)
-        # self.grade_table.setMinimumSize(QtCore.QSize(0, 180))
-        # self.grade_table.setMaximumSize(QtCore.QSize(16777215, 200))
-        # self.grade_table.setAutoFillBackground(False)
-        # self.grade_table.setObjectName("grade_table")
-        # self.grade_table.setColumnCount(2)
-        # self.grade_table.setRowCount(6)
-        # item = QtWidgets.QTableWidgetItem()
-        # self.grade_table.setVerticalHeaderItem(0, item)
-        # item = QtWidgets.QTableWidgetItem()
-        # self.grade_table.setVerticalHeaderItem(1, item)
-        # item = QtWidgets.QTableWidgetItem()
-        # self.grade_table.setVerticalHeaderItem(2, item)
-        # item = QtWidgets.QTableWidgetItem()
-        # self.grade_table.setVerticalHeaderItem(3, item)
-        # item = QtWidgets.QTableWidgetItem()
-        # self.grade_table.setVerticalHeaderItem(4, item)
-        # item = QtWidgets.QTableWidgetItem()
-        # self.grade_table.setVerticalHeaderItem(5, item)
-        # item = QtWidgets.QTableWidgetItem()
-        # self.grade_table.setHorizontalHeaderItem(0, item)
-        # item = QtWidgets.QTableWidgetItem()
-        # self.grade_table.setHorizontalHeaderItem(1, item)
-        # self.grade_table.horizontalHeader().setVisible(False)
-        # self.grade_table.horizontalHeader().setCascadingSectionResizes(False)
-        # self.grade_table.horizontalHeader().setDefaultSectionSize(120)
-        # self.grade_table.horizontalHeader().setMinimumSectionSize(50)
-        # self.grade_table.horizontalHeader().setStretchLastSection(True)
-        # self.grade_table.verticalHeader().setStretchLastSection(True)
         self.verticalLayout_11.addWidget(self.grade_table)
         self.horizontalLayout_11.addLayout(self.verticalLayout_11)
         self.verticalLayout_4 = QtWidgets.QVBoxLayout()
@@ -257,8 +228,7 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
-        self.review__next_std_btn.clicked.connect(lambda: self.load_data(pd.DataFrame([[1,None],[2, None]], columns=["machine", "human"], index=["a", "b"]), './testing2.csv'))
-        self.review__save_btn.clicked.connect(lambda: self.currentModel.save())
+        
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(1)
@@ -274,6 +244,9 @@ class Ui_MainWindow(object):
         }
         self.select_predicted__browse_btn.clicked.connect(lambda: self.browse_file(self.select_predicted__line, browse_file_option))
         self.std_name__comboBox.currentIndexChanged.connect(self.change_current_student)
+        
+        self.review__next_std_btn.clicked.connect(lambda: self.load_data(pd.DataFrame([[1,None],[2, None]], columns=["machine", "human"], index=["a", "b"]), './testing2.csv'))
+        self.review__save_btn.clicked.connect(lambda: self.currentModel.save())
 
     def load_data(self, data: pd.DataFrame, path:str):
         self.currentModel = TableModel(data, path)
@@ -289,10 +262,20 @@ class Ui_MainWindow(object):
         if "action" in options:
             options.get("action")()
 
+    def display_grades(self, netId: str):
+        columns = ['content', 'research', 'organization', 'communication', 'efforts', 'quality of writing', 'bibliography']
+        
+        machine = self.tab2__master_df.loc[netId, columns]
+        human = self.tab2__human_df.loc[netId, columns]
+        df = pd.DataFrame({'machine': machine, 'human': human}, index=columns)
+        self.current_std_Table = TableModel(df, None)
+        self.grade_table.setModel(self.current_std_Table)
+        
     def load_predicted(self):
         fileName = self.select_predicted__line.text()
         self.tab2__master_df = read_spread_sheet(fileName)
-
+        self.tab2__master_df.set_index("Username", inplace=True)
+        self.tab2__human_df = self.tab2__master_df.copy()
         self.get_student_name()
         # dlg = QtWidgets.QMessageBox()
         # dlg.setWindowTitle("success!")
@@ -304,8 +287,8 @@ class Ui_MainWindow(object):
 
     def get_student_name(self):
         def df_get_student_name(row: pd.Series):
-            display = f"{row.get('First Name')} {row.get('Last Name')} ({row.get('Username')})"
-            value = row.get('Username')
+            display = f"{row.get('First Name')} {row.get('Last Name')} ({row.name})"
+            value = row.name
             return (display, value)
         
         assert isinstance(self.tab2__master_df, pd.DataFrame)
@@ -319,9 +302,17 @@ class Ui_MainWindow(object):
 
     def change_current_student(self):
         text = self.std_name__comboBox.currentText()
+        index = self.std_name__comboBox.currentIndex()
         netId = self.tab2__std_dict[text]
         
-        pass
+        # update next button
+        if index == len(self.tab2__std_dict) - 1:
+            self.review__next_std_btn.setEnabled(False)
+        else:
+            self.review__next_std_btn.setEnabled(True)
+
+        # display table
+        self.display_grades(netId)
 
     def read_spread_sheet(path: str) -> pd.DataFrame:
         _, extension = os.path.splitext(path)
@@ -353,22 +344,6 @@ class Ui_MainWindow(object):
         self.select_predicted__browse_btn.setText(_translate("MainWindow", "Browse"))
         self.std_name__label.setText(_translate("MainWindow", "Student:"))
         self.current_grade__label.setText(_translate("MainWindow", "Current grades:"))
-        # item = self.grade_table.verticalHeaderItem(0)
-        # item.setText(_translate("MainWindow", "research"))
-        # item = self.grade_table.verticalHeaderItem(1)
-        # item.setText(_translate("MainWindow", "communication"))
-        # item = self.grade_table.verticalHeaderItem(2)
-        # item.setText(_translate("MainWindow", "organization"))
-        # item = self.grade_table.verticalHeaderItem(3)
-        # item.setText(_translate("MainWindow", "efforts"))
-        # item = self.grade_table.verticalHeaderItem(4)
-        # item.setText(_translate("MainWindow", "quality of writing"))
-        # item = self.grade_table.verticalHeaderItem(5)
-        # item.setText(_translate("MainWindow", "bibliography"))
-        # item = self.grade_table.horizontalHeaderItem(0)
-        # item.setText(_translate("MainWindow", "machine predicted"))
-        # item = self.grade_table.horizontalHeaderItem(1)
-        # item.setText(_translate("MainWindow", "human correction"))
         self.additional_info__label.setText(_translate("MainWindow", "Additional information:"))
         self.review__save_btn.setText(_translate("MainWindow", "Save"))
         self.review__next_std_btn.setText(_translate("MainWindow", "Next Student"))
