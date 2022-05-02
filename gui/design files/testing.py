@@ -245,8 +245,15 @@ class Ui_MainWindow(object):
         self.select_predicted__browse_btn.clicked.connect(lambda: self.browse_file(self.select_predicted__line, browse_file_option))
         self.std_name__comboBox.currentIndexChanged.connect(self.change_current_student)
         
-        self.review__next_std_btn.clicked.connect(lambda: self.load_data(pd.DataFrame([[1,None],[2, None]], columns=["machine", "human"], index=["a", "b"]), './testing2.csv'))
+        # self.review__next_std_btn.clicked.connect(lambda: self.load_data(pd.DataFrame([[1,None],[2, None]], columns=["machine", "human"], index=["a", "b"]), './testing2.csv'))
+        self.review__next_std_btn.clicked.connect(self.next_student)
         self.review__save_btn.clicked.connect(lambda: self.currentModel.save())
+
+
+    def next_student(self):
+        index = self.std_name__comboBox.currentIndex()
+        # student_list = len(self.tab2__std_dict)
+        self.std_name__comboBox.setCurrentIndex(index + 1)
 
     def load_data(self, data: pd.DataFrame, path:str):
         self.currentModel = TableModel(data, path)
