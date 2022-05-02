@@ -1,3 +1,9 @@
+# Essay Grading Helper
+<p align="center">
+  <a><img src="https://img.shields.io/badge/Python-3.7-blue"/></a>
+  <a><img src="https://img.shields.io/badge/PyQt-5-brightgreen"/></a>
+</p>
+
 # Table of Content
 1. [Requirements](#requirements)
 
