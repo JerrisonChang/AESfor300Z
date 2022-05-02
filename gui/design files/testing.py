@@ -134,10 +134,6 @@ class Ui_MainWindow(object):
         self.std_name__label = QtWidgets.QLabel(self.Reviewing)
         self.std_name__label.setObjectName("std_name__label")
         self.verticalLayout_11.addWidget(self.std_name__label)
-        # self.std_name__listView = QtWidgets.QListView(self.Reviewing)
-        # self.std_name__listView.setMaximumSize(QtCore.QSize(16777215, 30))
-        # self.std_name__listView.setObjectName("std_name__listView")
-        # self.verticalLayout_11.addWidget(self.std_name__listView)
         self.std_name__comboBox = QtWidgets.QComboBox(self.Reviewing)
         self.std_name__comboBox.setMaximumSize(QtCore.QSize(16777215, 30))
         self.std_name__comboBox.setObjectName("std_name__comboBox")
@@ -227,11 +223,10 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
-        
-
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
         self.tab2_setup()
 
     def tab2_setup(self):
@@ -243,10 +238,10 @@ class Ui_MainWindow(object):
         }
         self.select_predicted__browse_btn.clicked.connect(lambda: self.browse_file(self.select_predicted__line, browse_file_option))
         self.std_name__comboBox.currentIndexChanged.connect(self.change_current_student)
-        
-        # self.review__next_std_btn.clicked.connect(lambda: self.load_data(pd.DataFrame([[1,None],[2, None]], columns=["machine", "human"], index=["a", "b"]), './testing2.csv'))
         self.review__next_std_btn.clicked.connect(self.next_student)
         self.review__save_btn.clicked.connect(self.tab2_save)
+        # self.current_std_Table.dataChanged.connect(lambda: print("data changed detected"))
+        # self.grade_table.dataChanged.connect(lambda: print("data change detected"))
 
     def tab2_save(self):
         columns = ['content', 'research', 'organization', 'communication', 'efforts', 'quality of writing', 'bibliography']
@@ -261,12 +256,7 @@ class Ui_MainWindow(object):
 
     def next_student(self):
         index = self.std_name__comboBox.currentIndex()
-        # student_list = len(self.tab2__std_dict)
         self.std_name__comboBox.setCurrentIndex(index + 1)
-
-    def load_data(self, data: pd.DataFrame, path:str):
-        self.currentModel = TableModel(data, path)
-        self.grade_table.setModel(self.currentModel)
 
     def browse_file(self, target_line: QtWidgets.QLineEdit, options: dict):
         TITLE = options.get("title", "Open file")
@@ -284,9 +274,13 @@ class Ui_MainWindow(object):
         machine = self.tab2__master_df.loc[netId, columns]
         human = self.tab2__human_df.loc[netId, columns]
         df = pd.DataFrame({'machine': machine, 'human': human}, index=columns)
-        self.current_std_Table = TableModel(df, None)
+        self.current_std_Table = TableModel(df)
+        self.current_std_Table.dataChanged.connect(lambda: print("data change!!"))
         self.grade_table.setModel(self.current_std_Table)
         
+    def update_human_df(self, netId: str, data: TableModel):
+        pass
+    
     def load_predicted(self):
         fileName = self.select_predicted__line.text()
         self.tab2__master_df = self.read_spread_sheet(fileName)
@@ -368,14 +362,7 @@ class Ui_MainWindow(object):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-
-    path = './gui/test.csv'
-    df = pd.read_csv(path, index_col=0)
-
-    df2 = pd.DataFrame([[1,None],[2, None]], columns=["machine", "human"], index=["a", "b"])
-
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
-    ui.load_data(df, path)
     MainWindow.show()
     sys.exit(app.exec())

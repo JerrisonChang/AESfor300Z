@@ -3,10 +3,9 @@ from PyQt5.QtCore import Qt
 import pandas as pd
 
 class TableModel(QtCore.QAbstractTableModel):
-    def __init__(self, data: pd.DataFrame, file_path: str):
+    def __init__(self, data: pd.DataFrame):
         super(TableModel, self).__init__()
         self._data = data
-        self._file_path = file_path
 
     def data(self, index, role):
         if role == Qt.DisplayRole:
@@ -29,11 +28,9 @@ class TableModel(QtCore.QAbstractTableModel):
     def setData(self, index, value, role):
         if role == Qt.EditRole and value:
             self._data.iloc[index.row(), index.column()] = value
+            self.dataChanged.emit(index, index)
             return True
         return False
 
     def flags(self, index):
         return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
-
-    def save(self):
-        self._data.to_csv(self._file_path, encoding='utf-8')
