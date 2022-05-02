@@ -247,8 +247,18 @@ class Ui_MainWindow(object):
         
         # self.review__next_std_btn.clicked.connect(lambda: self.load_data(pd.DataFrame([[1,None],[2, None]], columns=["machine", "human"], index=["a", "b"]), './testing2.csv'))
         self.review__next_std_btn.clicked.connect(self.next_student)
-        self.review__save_btn.clicked.connect(lambda: self.currentModel.save())
+        self.review__save_btn.clicked.connect(self.tab2_save)
 
+    def tab2_save(self):
+        columns = ['content', 'research', 'organization', 'communication', 'efforts', 'quality of writing', 'bibliography']
+        current_file_path = self.select_predicted__line.text()
+        dir_, file_ =  os.path.split(current_file_path)
+        file_name, _ = os.path.splitext(file_)
+        writer = pd.ExcelWriter(os.path.join(dir_, f"{file_name}_human_graded.xlsx"), engine='xlsxwriter')
+        self.tab2__human_df.loc[:, columns].to_excel(writer, sheet_name='human')
+        self.tab2__master_df.loc[:, columns].to_excel(writer, sheet_name='machine')
+
+        writer.save()
 
     def next_student(self):
         index = self.std_name__comboBox.currentIndex()
