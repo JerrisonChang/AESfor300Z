@@ -26,11 +26,19 @@ class TableModel(QtCore.QAbstractTableModel):
                 return str(self._data.index[section])
 
     def setData(self, index, value, role):
-        if role == Qt.EditRole and value:
-            self._data.iloc[index.row(), index.column()] = value
-            self.dataChanged.emit(index, index)
-            return True
+        try:
+            number = int(value)
+            if role == Qt.EditRole and 0 <= number <= 4:
+                self._data.iloc[index.row(), index.column()] = value
+                self.dataChanged.emit(index, index)
+                return True
+        except ValueError:
+            return False
+        
         return False
 
     def flags(self, index):
-        return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
+        if index.column() == 0:
+            return Qt.ItemIsEnabled
+        else:
+            return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
