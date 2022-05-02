@@ -10,7 +10,6 @@ import os
 # from operator import itemgetter
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from AI_part.generate_training import read_spread_sheet
 from TableModel import TableModel
 import pandas as pd
 
@@ -290,17 +289,10 @@ class Ui_MainWindow(object):
         
     def load_predicted(self):
         fileName = self.select_predicted__line.text()
-        self.tab2__master_df = read_spread_sheet(fileName)
+        self.tab2__master_df = self.read_spread_sheet(fileName)
         self.tab2__master_df.set_index("Username", inplace=True)
         self.tab2__human_df = self.tab2__master_df.copy()
         self.get_student_name()
-        # dlg = QtWidgets.QMessageBox()
-        # dlg.setWindowTitle("success!")
-        # dlg.setText("complete loading predicted spreadsheet")
-        # button = dlg.exec()
-
-        # if button == QtWidgets.QMessageBox.Ok:
-        #     print("OK!!")
 
     def get_student_name(self):
         def df_get_student_name(row: pd.Series):
@@ -331,7 +323,7 @@ class Ui_MainWindow(object):
         # display table
         self.display_grades(netId)
 
-    def read_spread_sheet(path: str) -> pd.DataFrame:
+    def read_spread_sheet(self, path: str) -> pd.DataFrame:
         _, extension = os.path.splitext(path)
         
         if extension == '.csv':
