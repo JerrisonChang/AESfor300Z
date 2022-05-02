@@ -13,6 +13,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from TableModel import TableModel
 import pandas as pd
 
+COLUMNS = ['content', 'research', 'organization', 'communication', 'efforts', 'quality of writing', 'bibliography']
+
 class ExtensionError(Exception):
     pass
 
@@ -244,13 +246,12 @@ class Ui_MainWindow(object):
         # self.grade_table.dataChanged.connect(lambda: print("data change detected"))
 
     def tab2_save(self):
-        columns = ['content', 'research', 'organization', 'communication', 'efforts', 'quality of writing', 'bibliography']
         current_file_path = self.select_predicted__line.text()
         dir_, file_ =  os.path.split(current_file_path)
         file_name, _ = os.path.splitext(file_)
         writer = pd.ExcelWriter(os.path.join(dir_, f"{file_name}_human_graded.xlsx"), engine='xlsxwriter')
-        self.tab2__human_df.loc[:, columns].to_excel(writer, sheet_name='human')
-        self.tab2__master_df.loc[:, columns].to_excel(writer, sheet_name='machine')
+        self.tab2__human_df.loc[:, COLUMNS].to_excel(writer, sheet_name='human')
+        self.tab2__master_df.loc[:, COLUMNS].to_excel(writer, sheet_name='machine')
 
         writer.save()
 
@@ -269,18 +270,18 @@ class Ui_MainWindow(object):
             options.get("action")()
 
     def display_grades(self, netId: str):
-        columns = ['content', 'research', 'organization', 'communication', 'efforts', 'quality of writing', 'bibliography']
         
-        machine = self.tab2__master_df.loc[netId, columns]
-        human = self.tab2__human_df.loc[netId, columns]
-        df = pd.DataFrame({'machine': machine, 'human': human}, index=columns)
+        machine = self.tab2__master_df.loc[netId, COLUMNS]
+        human = self.tab2__human_df.loc[netId, COLUMNS]
+        df = pd.DataFrame({'machine': machine, 'human': human}, index=COLUMNS)
         self.current_std_Table = TableModel(df)
-        self.current_std_Table.dataChanged.connect(lambda: print("data change!!"))
+        self.current_std_Table.dataChanged.connect(lambda: self.update_human_df(netId, df['human']))
         self.grade_table.setModel(self.current_std_Table)
         
-    def update_human_df(self, netId: str, data: TableModel):
-        pass
-    
+    def update_human_df(self, netId: str, data: pd.Series):
+        for i in COLUMNS:
+            self.tab2__human_df.loc[netId, i] = data[i]
+
     def load_predicted(self):
         fileName = self.select_predicted__line.text()
         self.tab2__master_df = self.read_spread_sheet(fileName)
