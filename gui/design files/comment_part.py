@@ -10,7 +10,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from helperscripts.comments_loader import load_comment_bank
-from TableModel import TableModel
+from TableModel import CommentTable
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -84,8 +84,11 @@ class Ui_Form(object):
         self.setupFunctions()
     
     def setupFunctions(self):
-        model = TableModel(load_comment_bank())
-        self.tableView__comments.setModel(model)
+        self.currentStudentComment =  CommentTable(load_comment_bank().fillna(""))
+        self.tableView__comments.setModel(self.currentStudentComment)
+        self.tableView__comments.setColumnWidth(0, 400)
+        self.tableView__comments.resizeRowsToContents()
+        # self.tableView__comments.resizeColumnsToContents()
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
