@@ -42,3 +42,39 @@ class TableModel(QtCore.QAbstractTableModel):
             return Qt.ItemIsEnabled
         else:
             return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
+
+
+class CommentTable(TableModel):
+    def __init__(self, data: pd.DataFrame):
+        super().__init__(data)
+        self.checks = {}
+    
+    def data(self, index, role = Qt.DisplayRole):
+        row = index.row()
+        col = index.column()
+        if role == Qt.DisplayRole:
+            return f'{self._data.iloc[row, col]}'
+        elif role == Qt.CheckStateRole and col == 0:
+            return self.checkState(QtCore.QPersistentModelIndex(index))
+        return None
+
+    def checkState(self, index):
+        if index in self.checks.keys():
+            return self.checks[index]
+        else:
+            return Qt.Unchecked
+
+    def setData(self, index, value, role=Qt.EditRole):
+
+        if not index.isValid():
+            return False
+        if role == Qt.CheckStateRole:
+            self.checks[QtCore.QPersistentModelIndex(index)] = value
+            return True
+        return False
+
+    def flags(self, index):
+        fl = QtCore.QAbstractTableModel.flags(self, index)
+        if index.column() == 0:
+            fl |= Qt.ItemIsUserCheckable
+        return fl
