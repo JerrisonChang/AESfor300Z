@@ -47,8 +47,8 @@ class TableModel(QtCore.QAbstractTableModel):
 class CommentTable(TableModel):
     def __init__(self, data: pd.DataFrame):
         super().__init__(data)
-        self.checks = {}
-    
+        self.checks = {} 
+
     def data(self, index, role = Qt.DisplayRole):
         row = index.row()
         col = index.column()

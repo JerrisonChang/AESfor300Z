@@ -99,7 +99,10 @@ class Ui_Form(object):
     
     def setupFunctions(self):
         self.currentStudentCommentDf = load_comment_bank().fillna("")
-        self.tableView__comments.setModel(CommentTable(self.currentStudentCommentDf))
+        self.proxy_model = QtCore.QSortFilterProxyModel()
+        self.proxy_model.setFilterKeyColumn(1)
+        self.proxy_model.setSourceModel(CommentTable(self.currentStudentCommentDf))
+        self.tableView__comments.setModel(self.proxy_model)
         self.tableView__comments.setColumnWidth(0, 400)
         self.tableView__comments.resizeRowsToContents()
         filtered_btns = [
@@ -119,12 +122,16 @@ class Ui_Form(object):
 
         # self.tableView__comments.resizeColumnsToContents()
     def enable_disable_mod(self, checkbox: QtWidgets.QRadioButton, name: str):
+        # checks = self.tableView__comments.model().get_check_state()
+        
         if checkbox.isChecked():
             if not name is None:
-                self.tableView__comments.setModel(CommentTable(self.currentStudentCommentDf[self.currentStudentCommentDf['category'] == name]))
+                self.proxy_model.setFilterFixedString(name)
                 print(f"{name} is checked")
             else:
-                self.tableView__comments.setModel(CommentTable(self.currentStudentCommentDf))
+                self.proxy_model.setFilterFixedString("")
+
+            self.tableView__comments.resizeRowsToContents()
                 
 
 
