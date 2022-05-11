@@ -1,6 +1,7 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
 import pandas as pd
+from typing import List
 
 class TableModel(QtCore.QAbstractTableModel):
     def __init__(self, data: pd.DataFrame):
@@ -76,7 +77,7 @@ class CommentTable(TableModel):
 
         if role == Qt.CheckStateRole:
             self.checks[QtCore.QPersistentModelIndex(index)] = value
-            # print(f"checked!!! {value}")
+            # print(f"{index} checked!!! {value}")
             row, col = index.row(), index.column()
             if value == 2: # checked
                 self.boxCheckedSignal.emit(row + 1)

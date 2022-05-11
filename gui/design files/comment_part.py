@@ -32,6 +32,7 @@ class CommentWidget(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self, parent)
         
         self.horizontalLayout = QtWidgets.QHBoxLayout(self)
+        self.horizontalLayout.setContentsMargins(0,0,0,0)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
@@ -161,7 +162,7 @@ class CommentWidget(QtWidgets.QWidget):
 
 class CommentWidgetWindow(object):
     
-
+    checkComment = QtCore.pyqtSignal(set, name="checkComment")
     def setupUi(self, Form):
         Form.setObjectName("Form")
         # Form.resize(1018, 613)
@@ -233,6 +234,7 @@ class CommentWidgetWindow(object):
         self.setupFunctions()
     
     def setupFunctions(self):
+        
         self.currentStudentCommentDf = load_comment_bank().fillna("")
         self.checkedComments = set()
         self.proxy_model = QtCore.QSortFilterProxyModel()
@@ -255,18 +257,21 @@ class CommentWidgetWindow(object):
         for i, name in zip(filtered_btns, columns):
             slot = partial(self.enable_disable_mod, *(i, name))
             i.toggled.connect(slot)
-
         self.tableView__comments.model().sourceModel().boxChecked.connect(lambda x: self.changeComment(x, 1))    
         self.tableView__comments.model().sourceModel().boxUnchecked.connect(lambda x: self.changeComment(x, 2))    
+        index = self.tableView__comments.model().sourceModel().index(0,0)
+        self.tableView__comments.model().sourceModel().setData(index, 2, QtCore.Qt.CheckStateRole)
         # self.tableView__comments.resizeColumnsToContents()
 
     def changeComment(self, element: int, op: int):
         if op == 1:
             self.checkedComments.add(element)
+            print(f"add {element}")
         elif op == 2:
             self.checkedComments.remove(element)
+            print(f"delete {element}")
 
-        self.checkComment.emit(self.checkedComments)
+        
 
     def enable_disable_mod(self, checkbox: QtWidgets.QRadioButton, name: str):
         # checks = self.tableView__comments.model().get_check_state()
