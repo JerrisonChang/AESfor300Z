@@ -9,8 +9,9 @@ import sys
 import os
 # from operator import itemgetter
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, QtWebEngineWidgets
 from TableModel import TableModel
+from comment_part import CommentWidgetWindow, CommentWidget
 import pandas as pd
 
 COLUMNS = ['content', 'research', 'organization', 'communication', 'efforts', 'quality of writing', 'bibliography']
@@ -142,20 +143,29 @@ class Ui_MainWindow(object):
         self.verticalLayout_11.addWidget(self.std_name__comboBox)
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_11.addItem(spacerItem1)
+        # self.commentWidget_customed = CommentWidgetWindow()
+        self.commentWidget = CommentWidget(self.Reviewing)
+        # self.commentWidget = QtWidgets.QWidget()
+        # self.commentWidget_customed.setupUi(self.commentWidget)
+        self.verticalLayout_11.addWidget(self.commentWidget)
         self.current_grade__label = QtWidgets.QLabel(self.Reviewing)
         self.current_grade__label.setObjectName("current_grade__label")
-        self.verticalLayout_11.addWidget(self.current_grade__label)
+        # self.verticalLayout_11.addWidget(self.current_grade__label)
         self.grade_table = QtWidgets.QTableView()
-        self.verticalLayout_11.addWidget(self.grade_table)
+        # self.verticalLayout_11.addWidget(self.grade_table)
         self.horizontalLayout_11.addLayout(self.verticalLayout_11)
+        self.horizontalLayout_11.setStretch(0, 2)
+        self.horizontalLayout_11.setStretch(1, 1)
         self.verticalLayout_4 = QtWidgets.QVBoxLayout()
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.additional_info__label = QtWidgets.QLabel(self.Reviewing)
-        self.additional_info__label.setMinimumSize(QtCore.QSize(250, 0))
+        self.additional_info__label.setMinimumSize(QtCore.QSize(300, 0))
         self.additional_info__label.setObjectName("additional_info__label")
         self.verticalLayout_4.addWidget(self.additional_info__label)
         spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_4.addItem(spacerItem2)
+        self.verticalLayout_4.addWidget(self.current_grade__label)
+        self.verticalLayout_4.addWidget(self.grade_table)
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.review__save_btn = QtWidgets.QPushButton(self.Reviewing)
@@ -242,6 +252,7 @@ class Ui_MainWindow(object):
         self.std_name__comboBox.currentIndexChanged.connect(self.change_current_student)
         self.review__next_std_btn.clicked.connect(self.next_student)
         self.review__save_btn.clicked.connect(self.tab2_save)
+        self.commentWidget.checkComment.connect(lambda x: print(f"current checked id: {x}"))
         # self.current_std_Table.dataChanged.connect(lambda: print("data changed detected"))
         # self.grade_table.dataChanged.connect(lambda: print("data change detected"))
 
@@ -365,5 +376,5 @@ if __name__ == "__main__":
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
-    MainWindow.show()
+    MainWindow.show() 
     sys.exit(app.exec())
