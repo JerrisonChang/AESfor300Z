@@ -99,6 +99,7 @@ class Ui_Form(object):
     
     def setupFunctions(self):
         self.currentStudentCommentDf = load_comment_bank().fillna("")
+        self.checkedComments = set()
         self.proxy_model = QtCore.QSortFilterProxyModel()
         self.proxy_model.setFilterKeyColumn(1)
         self.proxy_model.setSourceModel(CommentTable(self.currentStudentCommentDf))
@@ -120,6 +121,8 @@ class Ui_Form(object):
             slot = partial(self.enable_disable_mod, *(i, name))
             i.toggled.connect(slot)
 
+        self.tableView__comments.model().sourceModel().boxChecked.connect(lambda x: self.checkedComments.add(x))    
+        self.tableView__comments.model().sourceModel().boxUnchecked.connect(lambda x: self.checkedComments.remove(x))    
         # self.tableView__comments.resizeColumnsToContents()
     def enable_disable_mod(self, checkbox: QtWidgets.QRadioButton, name: str):
         # checks = self.tableView__comments.model().get_check_state()

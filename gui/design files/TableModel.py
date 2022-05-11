@@ -45,6 +45,9 @@ class TableModel(QtCore.QAbstractTableModel):
 
 
 class CommentTable(TableModel):
+    boxCheckedSignal = QtCore.pyqtSignal(int, name="boxChecked")
+    boxUncheckedSignal = QtCore.pyqtSignal(int, name="boxUnchecked")
+    
     def __init__(self, data: pd.DataFrame):
         super().__init__(data)
         self.checks = {} 
@@ -54,12 +57,14 @@ class CommentTable(TableModel):
         col = index.column()
         if role == Qt.DisplayRole:
             return f'{self._data.iloc[row, col]}'
-        elif role == Qt.CheckStateRole and col == 0:
+        
+        if role == Qt.CheckStateRole and col == 0:
             return self.checkState(QtCore.QPersistentModelIndex(index))
-        return None
+        
+        # return None
 
     def checkState(self, index):
-        if index in self.checks.keys():
+        if index in self.checks:
             return self.checks[index]
         else:
             return Qt.Unchecked
@@ -68,13 +73,23 @@ class CommentTable(TableModel):
 
         if not index.isValid():
             return False
+
         if role == Qt.CheckStateRole:
             self.checks[QtCore.QPersistentModelIndex(index)] = value
+            # print(f"checked!!! {value}")
+            row, col = index.row(), index.column()
+            if value == 2: # checked
+                self.boxCheckedSignal.emit(row + 1)
+                # print(f"checked {row} {col}")
+            else: # unchecked
+                self.boxUncheckedSignal.emit(row + 1)
+                # print(f"unchecked {row} {col}")
+                pass
             return True
         return False
 
     def flags(self, index):
         fl = QtCore.QAbstractTableModel.flags(self, index)
         if index.column() == 0:
-            fl |= Qt.ItemIsUserCheckable
+            fl |= Qt.ItemIsUserCheckable | Qt.ItemIsSelectable
         return fl
