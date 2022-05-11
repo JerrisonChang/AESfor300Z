@@ -1,13 +1,20 @@
 from helperscripts.read_docx import DocxReader
 from helperscripts.post_process import PostProcessor
+from gui.userinterface import Ui_MainWindow
 import helperscripts.write_into_gradebook as WIG
 
+# class pre_processing(Ui_MainWindow):
+#     def proceed_btn():
+#         # check if all three boxed are already filled ....
+#         WIG.create_predict_templates(path_to_blank_gb= Ui_MainWindow.roster_string, path_to_essays= Ui_MainWindow.essay_dir_string , output_csv= Ui_MainWindow.output_dir)
+#         # go to the next tab
+
 if __name__ == "__main__":
-    HOMEWORK_CODE = "hw2_sp22"
+    HOMEWORK_CODE = "hw4_sp22"
     data_processing_settings = {
         'path_to_blank_gb': f'./gradebook/{HOMEWORK_CODE}/roster.xlsx',
         'path_to_essays': f'./essays/{HOMEWORK_CODE}',
-        'output_csv': f'./gradebook/{HOMEWORK_CODE}/predict_template_hw2.csv'
+        'output_csv': f'./gradebook/{HOMEWORK_CODE}/predict_template_hw4.csv'
     }
 
     post_processing_settings = {
@@ -16,8 +23,8 @@ if __name__ == "__main__":
     }
 
     # uncomment this line for data preparation process
-    # WIG.create_predict_templates(**data_processing_settings)
+    #WIG.create_predict_templates(**data_processing_settings)
     
     ## uncomment the following two lines for post processing
-    processor = PostProcessor(post_processing_settings['input_file'])
-    processor.process_to_csv(post_processing_settings['output_file'])
+    # processor = PostProcessor(post_processing_settings['input_file'])
+    # processor.process_to_csv(post_processing_settings['output_file'])

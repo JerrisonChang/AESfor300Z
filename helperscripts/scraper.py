@@ -1,9 +1,7 @@
 '''
 This script is supposed to take in an essay folder and output a csv with username, hw_id, and extracted feature
 '''
-
 import pandas as pd
-
 import glob
 import re
 from typing import List, Dict

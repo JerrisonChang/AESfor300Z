@@ -8,7 +8,9 @@
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QFileDialog
-from os.path import expanduser
+import helperscripts.write_into_gradebook as WIG
+from helperscripts.post_process import PostProcessor
+import os
 
 
 class Ui_MainWindow(object):
@@ -41,6 +43,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
         self.select_roster__line = QtWidgets.QLineEdit(self.input_group_box)
+
+
         self.select_roster__line.setObjectName("select_roster__line")
         self.horizontalLayout_5.addWidget(self.select_roster__line)
         self.select_roster__browse_btn = QtWidgets.QPushButton(self.input_group_box)
@@ -53,6 +57,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         self.select_dir__line = QtWidgets.QLineEdit(self.input_group_box)
+
         self.select_dir__line.setObjectName("select_dir__line")
         self.horizontalLayout_6.addWidget(self.select_dir__line)
         self.select_dir__browse_btn = QtWidgets.QPushButton(self.input_group_box)
@@ -72,7 +77,8 @@ class Ui_MainWindow(object):
         self.label.setObjectName("label")
         self.horizontalLayout_9.addWidget(self.label)
         self.output__dir = QtWidgets.QLineEdit(self.output_group_box)
-        self.output__dir.setInputMask("")
+
+        #self.output__dir.setInputMask("")
         self.output__dir.setObjectName("output__dir")
         self.horizontalLayout_9.addWidget(self.output__dir)
         self.verticalLayout_10.addLayout(self.horizontalLayout_9)
@@ -86,6 +92,7 @@ class Ui_MainWindow(object):
         self.output__label.setObjectName("output__label")
         self.horizontalLayout_8.addWidget(self.output__label)
         self.output__file_name = QtWidgets.QLineEdit(self.output_group_box)
+
         self.output__file_name.setObjectName("output__file_name")
         self.horizontalLayout_8.addWidget(self.output__file_name)
         self.output__browse_btn = QtWidgets.QPushButton(self.output_group_box)
@@ -248,6 +255,11 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         self.select_roster__browse_btn.clicked.connect(lambda x: self.browse_file( self.select_roster__line, {"title": "Select Roster File"}))
         self.select_dir__browse_btn.clicked.connect(lambda x: self.browse_directory( self.select_dir__line, {"title": "Select Directory"}))
+        self.output__browse_btn.clicked.connect(lambda x: self.browse_directory( self.output__file_name, {"title": "Select Output Directory"}))
+        self.output__proceed_btn.clicked.connect(lambda x: self.proceed_btn())
+        self.select_gradebook__browse_btn.clicked.connect(lambda x: self.browse_file(self.select_gradebook__line, {"title": "Select Gradebook file"}))
+        self.select_bb_sheet__browse_btn.clicked.connect(lambda x: self.browse_file(self.select_bb_sheet__line, {"title": "Select Blackboard worksheet"}))
+        self.finish_btn.clicked.connect(lambda x: self.finish_botton())
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -259,7 +271,8 @@ class Ui_MainWindow(object):
         self.select_dir__browse_btn.setText(_translate("MainWindow", "Browse"))
         self.output_group_box.setTitle(_translate("MainWindow", "Output"))
         self.label.setText(_translate("MainWindow", "File name:"))
-        self.output__dir.setText(_translate("MainWindow", "hw1_sp22_predict_template.csv"))
+        #self.output__dir.setText(_translate("MainWindow", "hw<_>_sp22_predict_template.csv"))
+        self.output__dir.setText(_translate("MainWindow"," "))
         self.output__label.setText(_translate("MainWindow", "Directory:"))
         self.output__browse_btn.setText(_translate("MainWindow", "Browse"))
         self.output__proceed_btn.setText(_translate("MainWindow", "Proceed"))
@@ -297,18 +310,28 @@ class Ui_MainWindow(object):
     
     def browse_file(self, target_line: QtWidgets.QLineEdit, options: dict):
         TITLE = options.get("title", "Open file")
-        DEFAULT_PATH = options.get("default_path", "/Users/sernd/EASfor300Z")
-        fname = QFileDialog.getOpenFileName(self.centralwidget, TITLE, DEFAULT_PATH, "csv (*.csv)")
+        DEFAULT_PATH = options.get("default_path", "/Users/sernd/EASfor300Z/gradebook/")
+        #fname = QFileDialog.getOpenFileName(self.centralwidget, TITLE, DEFAULT_PATH, "csv (*.csv)")
+        fname = QFileDialog.getOpenFileName(self.centralwidget, TITLE, DEFAULT_PATH)
         print(fname)
         target_line.setText(fname[0])
 
     def browse_directory(self, target_line: QtWidgets.QLineEdit, options: dict):
         TITLE = options.get("title", "Open Diretory")
-        #DEFAULT_PATH = options.get("default_path", "/Users/sernd/EASfor300Z")
-        #fname = os.getcwd()
-        fname = QFileDialog.getExistingDirectory(self.centralwidget, TITLE, expanduser("~"))
+        DEFAULT_PATH = options.get("default_path", "/Users/sernd/EASfor300Z/essays/")
+        fname = QFileDialog.getExistingDirectory(self.centralwidget, TITLE, DEFAULT_PATH)
         print(fname)
-        target_line.setText(fname[0])
+        target_line.setText(fname)
+    
+    def proceed_btn(self):
+        WIG.create_predict_templates(path_to_blank_gb= self.select_roster__line.text() , 
+            path_to_essays= self.select_dir__line.text() , 
+            output_csv= os.path.join(self.output__file_name.text(),self.output__dir.text()))
+        # go to the next tab
+
+    def finish_botton(self):
+        processor = PostProcessor(self.select_gradebook__line.text())
+        processor.generate_two_columns(self.select_bb_sheet__line.text())
 
 
 if __name__ == "__main__":

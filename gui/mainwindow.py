@@ -66,12 +66,14 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         self.select_roster__browse_btn.clicked.connect(lambda x: self.browse_file( self.select_roster__line, {"title": "Select Roster File"}))
+        self.select_dir__browse_btn.clicked.connect(lambda x: self.browse_file( self.select_dir__line, {"title": "Select Directory"}))
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.select_roster__browse_btn.setText(_translate("MainWindow", "Browse"))
         self.select_dir__browse_btn.setText(_translate("MainWindow", "Browse"))
+        self.output__browse_btn.setText(_translate("MainWindow", "Browse"))
         self.pushButton_3.setText(_translate("MainWindow", "Proceed"))
         self.select_roster__label.setText(_translate("MainWindow", "Select roster file"))
         self.select_dir__label.setText(_translate("MainWindow", "Select essay directory"))
