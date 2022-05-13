@@ -9,6 +9,7 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QFileDialog
 
+<<<<<<< HEAD
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -60,6 +61,56 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 640, 22))
+=======
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(552, 294)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.select_roster__browse_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.select_roster__browse_btn.setGeometry(QtCore.QRect(430, 30, 100, 31))
+        self.select_roster__browse_btn.setObjectName("select_roster__browse_btn")
+        self.select_roster__line = QtWidgets.QLineEdit(self.centralwidget)
+        self.select_roster__line.setGeometry(QtCore.QRect(30, 30, 381, 21))
+        self.select_roster__line.setObjectName("select_roster__line")
+        self.select_dir__browse_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.select_dir__browse_btn.setGeometry(QtCore.QRect(430, 120, 100, 31))
+        self.select_dir__browse_btn.setObjectName("select_dir__browse_btn")
+        self.select_dir__line = QtWidgets.QLineEdit(self.centralwidget)
+        self.select_dir__line.setGeometry(QtCore.QRect(30, 120, 381, 21))
+        self.select_dir__line.setObjectName("select_dir__line")
+        self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_3.setGeometry(QtCore.QRect(430, 210, 100, 31))
+        self.pushButton_3.setObjectName("pushButton_3")
+        self.output__line = QtWidgets.QLineEdit(self.centralwidget)
+        self.output__line.setGeometry(QtCore.QRect(90, 170, 311, 21))
+        self.output__line.setObjectName("output__line")
+        self.select_roster__label = QtWidgets.QLabel(self.centralwidget)
+        self.select_roster__label.setGeometry(QtCore.QRect(30, 10, 121, 16))
+        self.select_roster__label.setObjectName("select_roster__label")
+        self.select_dir__label = QtWidgets.QLabel(self.centralwidget)
+        self.select_dir__label.setGeometry(QtCore.QRect(30, 100, 121, 16))
+        self.select_dir__label.setObjectName("select_dir__label")
+        self.output__label = QtWidgets.QLabel(self.centralwidget)
+        self.output__label.setGeometry(QtCore.QRect(30, 170, 47, 13))
+        font = QtGui.QFont()
+        font.setPointSize(11)
+        self.output__label.setFont(font)
+        self.output__label.setObjectName("output__label")
+        self.output__browse_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.output__browse_btn.setGeometry(QtCore.QRect(430, 170, 100, 31))
+        self.output__browse_btn.setObjectName("output__browse_btn")
+        self.label = QtWidgets.QLabel(self.centralwidget)
+        self.label.setGeometry(QtCore.QRect(30, 210, 47, 13))
+        self.label.setObjectName("label")
+        self.lineEdit = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEdit.setGeometry(QtCore.QRect(90, 210, 311, 20))
+        self.lineEdit.setObjectName("lineEdit")
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 552, 21))
+>>>>>>> origin/implement-ui-functionality
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -68,12 +119,18 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+<<<<<<< HEAD
         
        
+=======
+        self.select_roster__browse_btn.clicked.connect(lambda x: self.browse_file( self.select_roster__line, {"title": "Select Roster File"}))
+        self.select_dir__browse_btn.clicked.connect(lambda x: self.browse_file( self.select_dir__line, {"title": "Select Directory"}))
+>>>>>>> origin/implement-ui-functionality
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+<<<<<<< HEAD
         self.pushButton.setText(_translate("MainWindow", "Browse"))
         __sortingEnabled = self.listWidget.isSortingEnabled()
         self.listWidget.setSortingEnabled(False)
@@ -119,6 +176,25 @@ class Ui_MainWindow(object):
         target_line.setText(fname[0])
 
         
+=======
+        self.select_roster__browse_btn.setText(_translate("MainWindow", "Browse"))
+        self.select_dir__browse_btn.setText(_translate("MainWindow", "Browse"))
+        self.output__browse_btn.setText(_translate("MainWindow", "Browse"))
+        self.pushButton_3.setText(_translate("MainWindow", "Proceed"))
+        self.select_roster__label.setText(_translate("MainWindow", "Select roster file"))
+        self.select_dir__label.setText(_translate("MainWindow", "Select essay directory"))
+        self.output__label.setText(_translate("MainWindow", "output:"))
+        self.output__browse_btn.setText(_translate("MainWindow", "Browse"))
+        self.label.setText(_translate("MainWindow", "File Name"))
+
+    def browse_file(self, target_line: QtWidgets.QLineEdit, options: dict):
+        TITLE = options.get("title", "Open file")
+        DEFAULT_PATH = options.get("default_path", "./")
+        FILE_FORMAT = options.get("file_format", None)
+        fname = QFileDialog.getOpenFileName(self.centralwidget, TITLE, DEFAULT_PATH, FILE_FORMAT)
+        target_line.setText(fname[0])
+
+>>>>>>> origin/implement-ui-functionality
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)

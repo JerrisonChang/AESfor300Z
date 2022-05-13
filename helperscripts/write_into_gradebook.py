@@ -24,7 +24,8 @@ def append_structured_essay_content_to_gb(base_gradebook: pd.DataFrame, hw_dir) 
     netID2structured_essay = reader.get_netID_to_structured_content()
     empty_essay = ('','','', 0, 0, 0 ,0)
     
-    features = ['title page', 'essay body', 'essay refs', 'line space', 'justification', 'indentation', 'font portion']
+    #features = ['title page', 'essay body', 'essay refs', 'line space', 'justification', 'indentation', 'font portion']
+    features = ['title page', 'essay body', 'essay refs']
     for i, feature in enumerate(features):
         base_gradebook[feature] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'], empty_essay)[i], axis=1 )
     # base_gradebook['title page'] = base_gradebook.apply(lambda row: netID2structured_essay.get(row['Username'],empty_essay)[0], axis=1)
@@ -135,9 +136,9 @@ def create_train_csv(hw_code: str, semester_code: str):
 
 if __name__ == "__main__":
     settings = {
-        'path_to_blank_gb': './s21_student_roster.xlsx',
-        'path_to_essays': './essays/hw4_s21',
-        'output_csv': './gradebook/predict_template.csv'
+        'path_to_blank_gb': './roster.xlsx',
+        'path_to_essays': './essays/hw2_sp22',
+        'output_csv': './gradebook/hw2_sp22/predict_template.csv'
     }
     # create_train_csv('hw4', 'fa20')
     

@@ -30,3 +30,5 @@ test.*
 .vscode/.ropeproject/
 .vscode/settings.json
 
+# others
+.idea/

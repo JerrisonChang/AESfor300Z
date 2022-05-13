@@ -1,8 +1,8 @@
 from re import M
 import pandas as pd
+import os
+from typing import List, Dict, Tuple
 
-from operator import itemgetter
-from typing import Dict, Tuple, List
 class PostProcessor():
     def __init__(self, input_file, rank2score: dict = None):
         self.main_gradebook = pd.read_excel(input_file,sheet_name=0,engine='openpyxl',header=0)
@@ -33,13 +33,15 @@ class PostProcessor():
             "quality of writing": ("quality of writing_prediction", "10pts")
         }
 
-    def process_to_csv(self, output_file_path:str):
+    def generate_two_columns(self):
         final_score = self.main_gradebook.apply(self.calculate_final_score, axis=1)
         smart_comment = self.main_gradebook.apply(self.write_comment, axis = 1)
         self.main_gradebook['final score'] = final_score
         self.main_gradebook['smart comment'] = smart_comment
+        # df = pd.read_csv('uploadfile.csv')
+        # print(self.main_gradebook['final score'])
 
-        self.main_gradebook.to_csv(output_file_path, index=False)
+        
 
     def get_comments(self, comment_IDs: str) -> str:
         """
@@ -100,14 +102,14 @@ class PostProcessor():
         else:
             return result
 
-if __name__ == "__main__":
-    settings = {
-        'input_file': './hw4_s21_gradebook.xlsx',
-        'output_file': './hw4_s21 grades with comments v3.csv'
-    }
-
-    processor = PostProcessor(settings['input_file'])
-    processor.process_to_csv(settings['output_file'])
-
-    # df = pd.read_excel("./gradebook/hw1_sp22/hw1_sp22_gradebook_2.xlsx", sheet_name=0, engine='openpyxl', header=0)
+# if __name__ == "__main__":
+#     settings = {
+#         'input_file': './hw1_sp22.xlsx',
+#         'output_file': './hw1_sp22 grades with comments v2.csv'
+#     }
+    # processor = PostProcessor(settings['input_file'])
+    # processor.process_to_csv(settings['output_file'])
+    # df = pd.read_excel('./gradebook/hw1_sp22/hw1_sp22_gradebook_1.xlsx',sheet_name=1,engine='openpyxl',header=0)
     # print(df)
+    # path = './gradebook/hw1_sp22/hw1_sp22_gradebook_1.xlsx
+    # print(os.path.isfile(path))
