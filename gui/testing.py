@@ -9,9 +9,11 @@ import sys
 import os
 # from operator import itemgetter
 
-from PyQt5 import QtCore, QtGui, QtWidgets, QtWebEngineWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 from TableModel import TableModel
-from comment_part import CommentWidgetWindow, CommentWidget
+import helperscripts.write_into_gradebook as WIG
+from helperscripts.post_process import PostProcessor
+from comment_part import CommentWidget
 import pandas as pd
 
 COLUMNS = ['content', 'research', 'organization', 'communication', 'efforts', 'quality of writing', 'bibliography']
@@ -238,8 +240,9 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
+        self.tab1_setup()
         self.tab2_setup()
+        self.tab3_setup()
 
     def tab2_setup(self):
         browse_file_option = {
@@ -339,6 +342,34 @@ class Ui_MainWindow(object):
         else:
             raise ExtensionError(f"Unsupported extension type; expected: .csv or .xlsx, got {extension}")
 
+
+    def tab1_setup(self):
+        self.select_roster__browse_btn.clicked.connect(lambda x: self.browse_file( self.select_roster__line, {"title": "Select Roster File"}))
+        self.select_dir__browse_btn.clicked.connect(lambda x: self.browse_directory( self.select_dir__line, {"title": "Select Directory"}))
+        self.output__browse_btn.clicked.connect(lambda x: self.browse_directory( self.output__file_name, {"title": "Select Output Directory"}))
+        self.output__proceed_btn.clicked.connect(lambda x: self.proceed_btn())
+        
+    def tab3_setup(self):
+        self.select_gradebook__browse_btn.clicked.connect(lambda x: self.browse_file(self.select_gradebook__line, {"title": "Select Gradebook file"}))
+        self.select_bb_sheet__browse_btn.clicked.connect(lambda x: self.browse_file(self.select_bb_sheet__line, {"title": "Select Blackboard worksheet"}))
+        self.finish_btn.clicked.connect(lambda x: self.finish_botton())
+
+    def browse_directory(self, target_line: QtWidgets.QLineEdit, options: dict):
+        TITLE = options.get("title", "Open Diretory")
+        DEFAULT_PATH = options.get("default_path", "/Users/sernd/EASfor300Z/essays/")
+        fname = QtWidgets.QFileDialog.getExistingDirectory(self.centralwidget, TITLE, DEFAULT_PATH)
+        print(fname)
+        target_line.setText(fname)
+    
+    def proceed_btn(self):
+        WIG.create_predict_templates(path_to_blank_gb= self.select_roster__line.text() , 
+            path_to_essays= self.select_dir__line.text() , 
+            output_csv= os.path.join(self.output__file_name.text(),self.output__dir.text()))
+        # go to the next tab
+
+    def finish_botton(self):
+        processor = PostProcessor(self.select_gradebook__line.text())
+        processor.generate_two_columns(self.select_bb_sheet__line.text())
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
