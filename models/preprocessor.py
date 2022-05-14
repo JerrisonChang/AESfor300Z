@@ -13,19 +13,23 @@ from helperscripts.readingfiles import read_spreadsheet
 class PreProcessor():
     def __init__(self, roster: pd.DataFrame):
         self.roster = roster
+        self.features = [
+            ['title page', ''], #title, default value
+            ['essay body', ''], 
+            ['essay refs', '']
+        ]
 
     def append_structured_essay_content_to_gradebook(self, essay_directory: str) -> pd.DataFrame:
         df = self.roster.copy()
         reader = DocxReader(essay_directory)
         netID2structured_essay = reader.get_netID_to_structured_content()
-        empty_essay = ('','','', 0, 0, 0 ,0)
-        features = ['title page', 'essay body', 'essay refs']
+        empty_essay = [default_value for _, default_value in self.features]
         
-        for i, feature in enumerate(features):
-            df[feature] = df.apply(self.append_feature_to_cell, args=(netID2structured_essay, empty_essay, i), axis=1 )
+        for i, (feature_title, _) in enumerate(self.features):
+            df[feature_title] = df.apply(self.append_feature_to_cell, args=(netID2structured_essay, empty_essay, i), axis=1 )
         
+        df['bibliography'] = ""
         df['word count'] = df.apply(self.get_word_count, axis=1)
-        df['bibliography'] = df.apply(lambda row: "", axis=1)
 
         return df
 
