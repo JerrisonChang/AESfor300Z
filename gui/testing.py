@@ -11,10 +11,11 @@ import os
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from TableModel import TableModel
+import pandas as pd
+
 import helperscripts.write_into_gradebook as WIG
 from helperscripts.post_process import PostProcessor
 from comment_part import CommentWidget
-import pandas as pd
 
 COLUMNS = ['content', 'research', 'organization', 'communication', 'efforts', 'quality of writing', 'bibliography']
 
@@ -298,6 +299,7 @@ class Ui_MainWindow(object):
 
     def load_predicted(self):
         fileName = self.select_predicted__line.text()
+        if not fileName: return
         self.tab2__master_df = self.read_spread_sheet(fileName)
         self.tab2__master_df.set_index("Username", inplace=True)
         self.tab2__human_df = self.tab2__master_df.copy()
@@ -347,7 +349,7 @@ class Ui_MainWindow(object):
         self.select_roster__browse_btn.clicked.connect(lambda x: self.browse_file( self.select_roster__line, {"title": "Select Roster File"}))
         self.select_dir__browse_btn.clicked.connect(lambda x: self.browse_directory( self.select_dir__line, {"title": "Select Directory"}))
         self.output__browse_btn.clicked.connect(lambda x: self.browse_directory( self.output__file_name, {"title": "Select Output Directory"}))
-        self.output__proceed_btn.clicked.connect(lambda x: self.proceed_btn())
+        self.output__proceed_btn.clicked.connect(self.create_prediction_template)
         
     def tab3_setup(self):
         self.select_gradebook__browse_btn.clicked.connect(lambda x: self.browse_file(self.select_gradebook__line, {"title": "Select Gradebook file"}))
@@ -361,11 +363,27 @@ class Ui_MainWindow(object):
         print(fname)
         target_line.setText(fname)
     
-    def proceed_btn(self):
+    def create_prediction_template(self):
+        path_to_roster = self.select_roster__line.text()
+        essay_directory = self.select_dir__line.text()
+        output_csv = os.path.join(self.output__file_name.text(), self.output__dir.text())
+        
+        if not (path_to_roster and essay_directory and output_csv ):
+            msg = QtWidgets.QMessageBox()
+            msg.setWindowTitle("Something Went Wrong")
+            msg.setText("You haven't finished the input.")
+            msg.exec_()
+            return
+        
         WIG.create_predict_templates(path_to_blank_gb= self.select_roster__line.text() , 
             path_to_essays= self.select_dir__line.text() , 
             output_csv= os.path.join(self.output__file_name.text(),self.output__dir.text()))
         # go to the next tab
+        
+        successMessage = QtWidgets.QMessageBox()
+        successMessage.setWindowTitle("Success")
+        successMessage.setText(f"Your prediction template is generated at {output_csv}!!")
+        successMessage.exec_()
 
     def finish_botton(self):
         processor = PostProcessor(self.select_gradebook__line.text())
