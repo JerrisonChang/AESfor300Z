@@ -242,7 +242,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         self.tab1_setup()
         self.tab2_setup()
@@ -265,7 +265,7 @@ class Ui_MainWindow(object):
 
         self.select_roster__browse_btn.clicked.connect(lambda x: self.browse_file( self.select_roster__line, {"title": "Select Roster File", "action": update_outputs}))
         self.select_dir__browse_btn.clicked.connect(lambda x: self.browse_directory( self.select_dir__line, {"title": "Select Directory"}))
-        self.output__browse_btn.clicked.connect(lambda x: self.browse_directory( self.output__file_name, {"title": "Select Output Directory"}))
+        self.output__browse_btn.clicked.connect(lambda x: self.browse_directory( self.output__file_name_line, {"title": "Select Output Directory"}))
         self.output__proceed_btn.clicked.connect(self.create_prediction_template)
         
     
@@ -376,12 +376,11 @@ class Ui_MainWindow(object):
         if not (path_to_roster and essay_directory and output_csv ):
             show_message(1, "You haven't finished the input.")
             return
-        
-        WIG.create_predict_templates(path_to_blank_gb= self.select_roster__line.text() , 
-            path_to_essays= self.select_dir__line.text() , 
-            output_csv= os.path.join(self.output__file_name.text(),self.output__dir.text()))
-        
+
+        WIG.create_predict_templates(path_to_roster ,essay_directory , output_csv)
+
         show_message(2, f"Your prediction template is generated at {output_csv}!!")
+        self.tabWidget.setCurrentIndex(1)
 
     def finish_botton(self):
         processor = PostProcessor(self.select_gradebook__line.text())
