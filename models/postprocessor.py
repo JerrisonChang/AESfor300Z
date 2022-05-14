@@ -23,7 +23,6 @@ class PostProcessor():
         self.reviewed_spreadsheet['final score'] = final_score
         self.reviewed_spreadsheet['smart comment'] = smart_comment
    
-
     def get_comments(self, comment_IDs: str) -> str:
         """
         This function will take in a list of comment ID's (in string format) along with
