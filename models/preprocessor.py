@@ -1,14 +1,8 @@
 import pandas as pd
-import os
-import json
-from typing import Dict, Tuple
 
 from helperscripts.read_docx import DocxReader
-from helperscripts.readingfiles import read_spreadsheet
-###
-# This 
-#
-###
+
+from typing import Dict, Tuple
 
 class PreProcessor():
     def __init__(self, roster: pd.DataFrame):
@@ -18,15 +12,15 @@ class PreProcessor():
             ['essay body', ''], 
             ['essay refs', '']
         ]
+        self.default_essay = [default_value for _, default_value in self.features]
 
     def append_structured_essay_content_to_gradebook(self, essay_directory: str) -> pd.DataFrame:
         df = self.roster.copy()
         reader = DocxReader(essay_directory)
         netID2structured_essay = reader.get_netID_to_structured_content()
-        empty_essay = [default_value for _, default_value in self.features]
         
         for i, (feature_title, _) in enumerate(self.features):
-            df[feature_title] = df.apply(self.append_feature_to_cell, args=(netID2structured_essay, empty_essay, i), axis=1 )
+            df[feature_title] = df.apply(self.append_feature_to_cell, args=(netID2structured_essay, i), axis=1 )
         
         df['bibliography'] = ""
         df['word count'] = df.apply(self.get_word_count, axis=1)
@@ -51,7 +45,7 @@ class PreProcessor():
         else:
             return 0
 
-    def append_feature_to_cell(self, row: pd.Series, essay_dict: Dict[str, Tuple], default_essay: Tuple, index: int):
+    def append_feature_to_cell(self, row: pd.Series, essay_dict: Dict[str, Tuple], index: int):
         userId = row['Username']
         
-        return essay_dict.get(userId, default_essay)[index]
+        return essay_dict.get(userId, self.default_essay)[index]
