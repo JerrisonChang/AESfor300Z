@@ -7,7 +7,7 @@ import pickle
 
 import pandas as pd
 
-from .EssayStructured import EssayStructured
+from .essaystructured import EssayStructured
 
 
 @dataclass
