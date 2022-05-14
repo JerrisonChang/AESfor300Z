@@ -13,9 +13,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from TableModel import TableModel
 import pandas as pd
 
+from comment_part import CommentWidget
 import helperscripts.write_into_gradebook as WIG
 from helperscripts.post_process import PostProcessor
-from comment_part import CommentWidget
+from helperscripts.readingfiles import read_spreadsheet
+from gui.quickutil import show_message
+
 
 COLUMNS = ['content', 'research', 'organization', 'communication', 'efforts', 'quality of writing', 'bibliography']
 
@@ -85,10 +88,10 @@ class Ui_MainWindow(object):
         self.label = QtWidgets.QLabel(self.output_group_box)
         self.label.setObjectName("label")
         self.horizontalLayout_9.addWidget(self.label)
-        self.output__dir = QtWidgets.QLineEdit(self.output_group_box)
-        self.output__dir.setInputMask("")
-        self.output__dir.setObjectName("output__dir")
-        self.horizontalLayout_9.addWidget(self.output__dir)
+        self.output__file_name_line = QtWidgets.QLineEdit(self.output_group_box)
+        self.output__file_name_line.setInputMask("")
+        self.output__file_name_line.setObjectName("output__dir")
+        self.horizontalLayout_9.addWidget(self.output__file_name_line)
         self.verticalLayout_10.addLayout(self.horizontalLayout_9)
         self.horizontalLayout_8 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_8.setObjectName("horizontalLayout_8")
@@ -99,9 +102,9 @@ class Ui_MainWindow(object):
         self.output__label.setFont(font)
         self.output__label.setObjectName("output__label")
         self.horizontalLayout_8.addWidget(self.output__label)
-        self.output__file_name = QtWidgets.QLineEdit(self.output_group_box)
-        self.output__file_name.setObjectName("output__file_name")
-        self.horizontalLayout_8.addWidget(self.output__file_name)
+        self.output__dir_line = QtWidgets.QLineEdit(self.output_group_box)
+        self.output__dir_line.setObjectName("output__file_name")
+        self.horizontalLayout_8.addWidget(self.output__dir_line)
         self.output__browse_btn = QtWidgets.QPushButton(self.output_group_box)
         self.output__browse_btn.setObjectName("output__browse_btn")
         self.horizontalLayout_8.addWidget(self.output__browse_btn)
@@ -244,7 +247,28 @@ class Ui_MainWindow(object):
         self.tab1_setup()
         self.tab2_setup()
         self.tab3_setup()
+    
+    def tab1_setup(self):
+        OUTPUT_DIR_LINE = self.output__dir_line
+        OUTPUT_FILE_NAME = self.output__file_name_line
+        def update_outputs():
+            if not self.select_roster__line.text(): return
 
+            file_path = self.select_roster__line.text()
+            dir_text, file_name = os.path.split(file_path)
+            get_output_name(file_name)
+            OUTPUT_DIR_LINE.setText(dir_text)
+
+        def get_output_name(file_name:str) -> str:
+            fname, _ = os.path.splitext(file_name)
+            OUTPUT_FILE_NAME.setText(f"{fname}__prediction_template.csv")
+
+        self.select_roster__browse_btn.clicked.connect(lambda x: self.browse_file( self.select_roster__line, {"title": "Select Roster File", "action": update_outputs}))
+        self.select_dir__browse_btn.clicked.connect(lambda x: self.browse_directory( self.select_dir__line, {"title": "Select Directory"}))
+        self.output__browse_btn.clicked.connect(lambda x: self.browse_directory( self.output__file_name, {"title": "Select Output Directory"}))
+        self.output__proceed_btn.clicked.connect(self.create_prediction_template)
+        
+    
     def tab2_setup(self):
         browse_file_option = {
             "default_path": "./gradebook/final",
@@ -260,6 +284,11 @@ class Ui_MainWindow(object):
         # self.current_std_Table.dataChanged.connect(lambda: print("data changed detected"))
         # self.grade_table.dataChanged.connect(lambda: print("data change detected"))
 
+    def tab3_setup(self):
+        self.select_gradebook__browse_btn.clicked.connect(lambda x: self.browse_file(self.select_gradebook__line, {"title": "Select Gradebook file"}))
+        self.select_bb_sheet__browse_btn.clicked.connect(lambda x: self.browse_file(self.select_bb_sheet__line, {"title": "Select Blackboard worksheet"}))
+        self.finish_btn.clicked.connect(lambda x: self.finish_botton())
+    
     def tab2_save(self):
         current_file_path = self.select_predicted__line.text()
         dir_, file_ =  os.path.split(current_file_path)
@@ -284,8 +313,13 @@ class Ui_MainWindow(object):
         if "action" in options:
             options.get("action")()
 
+    def browse_directory(self, target_line: QtWidgets.QLineEdit, options: dict):
+        TITLE = options.get("title", "Open Diretory")
+        DEFAULT_PATH = options.get("default_path", "/Users/sernd/EASfor300Z/essays/")
+        fname = QtWidgets.QFileDialog.getExistingDirectory(self.centralwidget, TITLE, DEFAULT_PATH)
+        target_line.setText(fname)
+
     def display_grades(self, netId: str):
-        
         machine = self.tab2__master_df.loc[netId, COLUMNS]
         human = self.tab2__human_df.loc[netId, COLUMNS]
         df = pd.DataFrame({'machine': machine, 'human': human}, index=COLUMNS)
@@ -300,7 +334,7 @@ class Ui_MainWindow(object):
     def load_predicted(self):
         fileName = self.select_predicted__line.text()
         if not fileName: return
-        self.tab2__master_df = self.read_spread_sheet(fileName)
+        self.tab2__master_df = read_spreadsheet(fileName)
         self.tab2__master_df.set_index("Username", inplace=True)
         self.tab2__human_df = self.tab2__master_df.copy()
         self.get_student_name()
@@ -333,57 +367,21 @@ class Ui_MainWindow(object):
 
         # display table
         self.display_grades(netId)
-
-    def read_spread_sheet(self, path: str) -> pd.DataFrame:
-        _, extension = os.path.splitext(path)
-        
-        if extension == '.csv':
-            return pd.read_csv(path, encoding='utf-8')
-        elif extension == '.xlsx':
-            return pd.read_excel(path, engine="openpyxl")
-        else:
-            raise ExtensionError(f"Unsupported extension type; expected: .csv or .xlsx, got {extension}")
-
-
-    def tab1_setup(self):
-        self.select_roster__browse_btn.clicked.connect(lambda x: self.browse_file( self.select_roster__line, {"title": "Select Roster File"}))
-        self.select_dir__browse_btn.clicked.connect(lambda x: self.browse_directory( self.select_dir__line, {"title": "Select Directory"}))
-        self.output__browse_btn.clicked.connect(lambda x: self.browse_directory( self.output__file_name, {"title": "Select Output Directory"}))
-        self.output__proceed_btn.clicked.connect(self.create_prediction_template)
-        
-    def tab3_setup(self):
-        self.select_gradebook__browse_btn.clicked.connect(lambda x: self.browse_file(self.select_gradebook__line, {"title": "Select Gradebook file"}))
-        self.select_bb_sheet__browse_btn.clicked.connect(lambda x: self.browse_file(self.select_bb_sheet__line, {"title": "Select Blackboard worksheet"}))
-        self.finish_btn.clicked.connect(lambda x: self.finish_botton())
-
-    def browse_directory(self, target_line: QtWidgets.QLineEdit, options: dict):
-        TITLE = options.get("title", "Open Diretory")
-        DEFAULT_PATH = options.get("default_path", "/Users/sernd/EASfor300Z/essays/")
-        fname = QtWidgets.QFileDialog.getExistingDirectory(self.centralwidget, TITLE, DEFAULT_PATH)
-        print(fname)
-        target_line.setText(fname)
     
     def create_prediction_template(self):
         path_to_roster = self.select_roster__line.text()
         essay_directory = self.select_dir__line.text()
-        output_csv = os.path.join(self.output__file_name.text(), self.output__dir.text())
+        output_csv = os.path.join(self.output__dir_line.text(), self.output__file_name_line.text())
         
         if not (path_to_roster and essay_directory and output_csv ):
-            msg = QtWidgets.QMessageBox()
-            msg.setWindowTitle("Something Went Wrong")
-            msg.setText("You haven't finished the input.")
-            msg.exec_()
+            show_message(1, "You haven't finished the input.")
             return
         
         WIG.create_predict_templates(path_to_blank_gb= self.select_roster__line.text() , 
             path_to_essays= self.select_dir__line.text() , 
             output_csv= os.path.join(self.output__file_name.text(),self.output__dir.text()))
-        # go to the next tab
         
-        successMessage = QtWidgets.QMessageBox()
-        successMessage.setWindowTitle("Success")
-        successMessage.setText(f"Your prediction template is generated at {output_csv}!!")
-        successMessage.exec_()
+        show_message(2, f"Your prediction template is generated at {output_csv}!!")
 
     def finish_botton(self):
         processor = PostProcessor(self.select_gradebook__line.text())
@@ -399,7 +397,6 @@ class Ui_MainWindow(object):
         self.select_dir__browse_btn.setText(_translate("MainWindow", "Browse"))
         self.output_group_box.setTitle(_translate("MainWindow", "Output"))
         self.label.setText(_translate("MainWindow", "file name:"))
-        self.output__dir.setText(_translate("MainWindow", "hw1_sp22_predict_template.csv"))
         self.output__label.setText(_translate("MainWindow", "directory:"))
         self.output__browse_btn.setText(_translate("MainWindow", "Browse"))
         self.output__proceed_btn.setText(_translate("MainWindow", "Proceed"))
