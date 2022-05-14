@@ -1,102 +1,14 @@
 from __future__ import annotations
-from unicodedata import category
 import docx
-from docx.text.paragraph import Paragraph
 from docx.document import Document
-import pandas as pd
 
 import glob
 import os
 import re
-import pickle
 from typing import Tuple, List, Dict
-from dataclasses import dataclass, field
 
 from featureextraction import format_extractor
-
-@dataclass
-class EssayStructured:
-    # raw_doc: Document
-    file_name: str
-    student_id: str
-    title: List[Paragraph] = field(default_factory=list)
-    body: List[Paragraph] = field(default_factory=list)
-    reference: List[Paragraph] = field(default_factory=list)
-    others: List[Paragraph] = field(default_factory=list)
-    scores: Dict[str, int] = field(default_factory=dict)
-
-    def preview(self,):
-        """This is for debugging purposes"""
-        print(f"\n>>>TITLE")
-        for i in self.title:
-            print(i.text)
-
-        print(f"\n>>>BODY")
-        for i in self.body:
-            print(i.text[:80], "...")
-        
-        print(f"\n>>>REFERENCE")
-        for i in self.reference:
-            print(i.text)
-
-    def get_title(self): 
-        return '\n'.join([i.text.strip() for i in self.title])
-
-    def get_body(self): 
-        return '\n'.join([i.text.strip() for i in self.body])
-    
-    def get_reference(self): 
-        return '\n'.join([i.text.strip() for i in self.reference])
-
-    def get_word_count(self):
-        return sum([len(i.text.split(" ")) for i in self.body])
-
-    def to_list(self) -> List[str]:
-        return [self.file_name, self.student_id, *[self.para_to_text(i) for i in [self.title, self.body, self.reference]]]
-
-    def para_to_text(self, para: List[Paragraph]) -> str:
-        return '\n'.join(p.text for p in para)
-
-    def attach_score(self, scores: Dict[str, int]):
-        self.scores = scores
-
-@dataclass
-class DocumentBin():
-    hw_code: str
-    semester_code: str
-    essays: List[EssayStructured]
-    
-    def attach_scores(self, scores: pd.DataFrame):
-        categories = ['content', 'research', 'communication', 'organization', 'bibliography', 'efforts', 'quality of writing']
-        for essay in self.essays:
-            grades = {j: scores.loc[essay.student_id, j] for j in categories}
-            essay.attach_score(grades)
-        
-
-    def to_csv(self, path: str, encoding: str='utf-8'):
-        array2d = [i.to_list() for i in self.essays]
-        df = pd.DataFrame(array2d, columns=['file_name', 'netID', 'title', 'body', 'reference'])
-        df.to_csv(path, encoding=encoding)
-    
-    def save_to_disk(self, path: str):
-        *_, file_name = os.path.split(path)
-        has_semester_code = re.search(r'(?:fa|sp|su)\d{2}', file_name)
-        has_hw_code = re.search(r"hw\d", file_name)
-        if not has_semester_code:
-            raise Exception(f"file name does not have semester code ({file_name})")
-        if not has_hw_code:
-            raise Exception(f"file name does not have hw code ({file_name})")
-        
-        essays = self.essays
-        with open(path, 'wb') as f:
-            pickle.dump(essays, f)
-
-    @staticmethod
-    def load_from_saved(path: str) -> DocumentBin:
-        *_, file_name = os.path.split(path)
-        hw_code, semester_code, *_ = file_name.split('_')
-        with open(path, 'rb') as f:
-            return DocumentBin(semester_code, hw_code, pickle.load(f))
+from models.EssayStructured import EssayStructured
 
 class DocxReader():
     def __init__(self, path_to_hw: str=None, *args, **kargs):
