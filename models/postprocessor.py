@@ -7,6 +7,7 @@ from helperscripts.readingfiles import read_spreadsheet
 
 
 PATH_TO_COMMENT_BANK = "./documents/AES comments bank.xlsx"
+USERNAME_COL = "Username"
 
 class PostProcessor():
     def __init__(self, input_file: str):
@@ -28,12 +29,13 @@ class PostProcessor():
    
     def append_to_roster(self, roster_df: pd.DataFrame):
         def helper(row: pd.Series, reviewed_df: pd.DataFrame):
-            current_student_id = row['Username']
-            final_score = reviewed_df.loc[current_student_id, "final score"]
+            user_id = row[USERNAME_COL]
+            final_score = reviewed_df.loc[user_id, "final score"]
             row.iloc[4] = final_score # the fourth column is the score column
-            row["Feedback to Learner"] = reviewed_df.loc[current_student_id, "smart comment"]
+            row["Feedback to Learner"] = reviewed_df.loc[user_id, "smart comment"]
         
-        roster_df.apply(helper, args=(self.reviewed_spreadsheet,), axis=1)
+        reference_df = self.reviewed_spreadsheet.set_index(USERNAME_COL)
+        roster_df.apply(helper, args=(reference_df,), axis=1)
 
 
     def get_comments(self, comment_IDs: str) -> str:
