@@ -2,7 +2,7 @@ import pandas as pd
 
 from typing import List, Dict, Tuple
 
-import rubric as rb
+from models import rubric as rb
 from helperscripts.readingfiles import read_spreadsheet
 
 
@@ -17,12 +17,25 @@ class PostProcessor():
         self.comment_bank = read_spreadsheet(PATH_TO_COMMENT_BANK)
         self.has_comment = True
     
-    def generate_two_columns(self):
+    def generate_two_columns(self, roster_df: pd.DataFrame = None):
         final_score = self.reviewed_spreadsheet.apply(self.calculate_final_score, axis=1)
         smart_comment = self.reviewed_spreadsheet.apply(self.write_comment, axis = 1)
         self.reviewed_spreadsheet['final score'] = final_score
         self.reviewed_spreadsheet['smart comment'] = smart_comment
+
+        if roster_df:
+            self.append_to_roster(roster_df)
    
+    def append_to_roster(self, roster_df: pd.DataFrame):
+        def helper(row: pd.Series, reviewed_df: pd.DataFrame):
+            current_student_id = row['Username']
+            final_score = reviewed_df.loc[current_student_id, "final score"]
+            row.iloc[4] = final_score # the fourth column is the score column
+            row["Feedback to Learner"] = reviewed_df.loc[current_student_id, "smart comment"]
+        
+        roster_df.apply(helper, args=(self.reviewed_spreadsheet,), axis=1)
+
+
     def get_comments(self, comment_IDs: str) -> str:
         """
         This function will take in a list of comment ID's (in string format) along with

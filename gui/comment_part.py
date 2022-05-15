@@ -11,7 +11,7 @@
 from functools import partial
 from PyQt5 import QtCore, QtGui, QtWidgets
 from helperscripts.comments_loader import load_comment_bank
-from TableModel import CommentTable
+from .TableModel import CommentTable
 from enum import Enum
 
 
