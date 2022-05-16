@@ -296,7 +296,7 @@ class Ui_MainWindow(object):
         file_name, _ = os.path.splitext(file_)
         output_path = f"{file_name}_human_graded.xlsx"
         writer = pd.ExcelWriter(os.path.join(dir_, output_path), engine='xlsxwriter')
-        self.tab2__human_df.loc[:, COLUMNS + ["comments ID", "customized comment"]].to_excel(writer, sheet_name='human')
+        self.tab2__human_df.loc[:, HUMAN_COLUMNS + ["comments ID", "customized comment"]].to_excel(writer, sheet_name='human')
         self.tab2__master_df.loc[:, COLUMNS].to_excel(writer, sheet_name='machine')
 
         writer.save()
@@ -323,9 +323,9 @@ class Ui_MainWindow(object):
         target_line.setText(fname)
 
     def display_grades(self, netId: str):
-        machine = self.tab2__master_df.loc[netId, COLUMNS]
-        human = self.tab2__human_df.loc[netId, COLUMNS]
-        df = pd.DataFrame({'machine': machine, 'human': human}, index=COLUMNS)
+        machine = self.tab2__master_df.loc[netId, COLUMNS].rename({a: b for a,b in zip(COLUMNS, HUMAN_COLUMNS)})
+        human = self.tab2__human_df.loc[netId, HUMAN_COLUMNS]
+        df = pd.DataFrame({'machine': machine, 'human': human}, index= HUMAN_COLUMNS)
         self.current_std_Table = TableModel(df)
         self.current_std_Table.dataChanged.connect(lambda x: self.update_human_df(netId, df['human']))
         self.grade_table.setModel(self.current_std_Table)
@@ -339,7 +339,7 @@ class Ui_MainWindow(object):
         
         
     def update_human_df(self, netId: str, data: pd.Series):
-        for i in COLUMNS:
+        for i in HUMAN_COLUMNS:
             self.tab2__human_df.loc[netId, i] = data[i]
 
     def update_human_df_comment_ids(self, comments_ids: Set[int]):
@@ -362,7 +362,7 @@ class Ui_MainWindow(object):
         if not fileName: return
         self.tab2__master_df = read_spreadsheet(fileName)
         self.tab2__master_df.set_index("Username", inplace=True)
-        self.tab2__human_df = self.tab2__master_df.copy()
+        self.tab2__human_df = self.tab2__master_df.rename({old: new for old, new in zip(COLUMNS, HUMAN_COLUMNS)}, axis=1)
         self.tab2__human_df["comments ID"] = ""
         self.tab2__human_df["customized comment"] = ""
         self.get_student_name()
