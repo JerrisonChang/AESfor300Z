@@ -36,7 +36,7 @@ class PreProcessor():
     def save_prediction_template(self, output_path: str) -> None:
         assert not self.prediction_template is None
         
-        self.prediction_template.to_csv(output_path)
+        self.prediction_template.to_csv(output_path, index=False)
 
     def get_word_count(self, row: pd.Series) -> int:
         words = row['essay body'].split(' ')
