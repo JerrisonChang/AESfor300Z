@@ -19,7 +19,7 @@ from gui.quickutil import show_message
 from typing import Set
 
 
-# COLUMNS = ['content', 'research', 'organization', 'communication', 'efforts', 'quality of writing', 'bibliography']
+HUMAN_COLUMNS = ['content', 'research', 'organization', 'communication', 'efforts', 'quality of writing', 'bibliography']
 COLUMNS = ['content_prediction', 'research_prediction', 'organization_prediction', 'communication_prediction', 'efforts_prediction', 'quality of writing_prediction', 'bibliography']
 COMMENT_ID_SEP = ", "
 class ExtensionError(Exception):
@@ -285,19 +285,22 @@ class Ui_MainWindow(object):
         self.commentWidget.typeComment.connect(self.update_human_df_customized_comments)
 
     def tab3_setup(self):
-        self.select_gradebook__browse_btn.clicked.connect(lambda x: self.browse_file(self.select_gradebook__line, {"title": "Select Gradebook file"}))
-        self.select_bb_sheet__browse_btn.clicked.connect(lambda x: self.browse_file(self.select_bb_sheet__line, {"title": "Select Blackboard worksheet"}))
-        self.finish_btn.clicked.connect(lambda x: self.finish_botton())
+        default_path = "./gradebook/"
+        self.select_gradebook__browse_btn.clicked.connect(lambda x: self.browse_file(self.select_gradebook__line, {"title": "Select Gradebook file", "default_path": default_path}))
+        self.select_bb_sheet__browse_btn.clicked.connect(lambda x: self.browse_file(self.select_bb_sheet__line, {"title": "Select Blackboard worksheet", "default_path": default_path}))
+        self.finish_btn.clicked.connect(lambda x: self.finish_button())
     
     def tab2_save(self):
         current_file_path = self.select_predicted__line.text()
         dir_, file_ =  os.path.split(current_file_path)
         file_name, _ = os.path.splitext(file_)
-        writer = pd.ExcelWriter(os.path.join(dir_, f"{file_name}_human_graded.xlsx"), engine='xlsxwriter')
-        self.tab2__human_df.loc[:, COLUMNS].to_excel(writer, sheet_name='human')
+        output_path = f"{file_name}_human_graded.xlsx"
+        writer = pd.ExcelWriter(os.path.join(dir_, output_path), engine='xlsxwriter')
+        self.tab2__human_df.loc[:, COLUMNS + ["comments ID", "customized comment"]].to_excel(writer, sheet_name='human')
         self.tab2__master_df.loc[:, COLUMNS].to_excel(writer, sheet_name='machine')
 
         writer.save()
+        show_message(2, f"Your human reviewed spreadsheet is saved in: {output_path}")
 
     def next_student(self):
         index = self.std_name__comboBox.currentIndex()
@@ -328,7 +331,6 @@ class Ui_MainWindow(object):
         self.grade_table.setModel(self.current_std_Table)
         
     def display_comments(self, netId: str):
-        print("display_comments")
         pure_text = self.tab2__human_df.loc[netId, "comments ID"]
         id_set = set([int(i) for i in pure_text.split(COMMENT_ID_SEP)]) if len(pure_text) > 0 else None
         customized_comment = self.tab2__human_df.loc[netId, "customized comment"]
@@ -414,18 +416,20 @@ class Ui_MainWindow(object):
         show_message(2, f"Your prediction template is generated at {output_csv}!!")
         self.tabWidget.setCurrentIndex(1)
 
-    def finish_botton(self):
+    def finish_button(self):
         path_to_reviewed_spread_sheet = self.select_gradebook__line.text()
         path_to_roster_file = self.select_bb_sheet__line.text()
         roster_df = read_spreadsheet(path_to_roster_file)
         post_processor = PostProcessor(path_to_reviewed_spread_sheet)
         
-        post_processor.generate_two_columns(roster_df)
-        roster_df.to_csv(path_to_roster_file)
-
-        show_message(2, f"Your file has been successfully saved to {path_to_roster_file} and is ready to be uploaded!!")
-        # processor = PostProcessor(self.select_gradebook__line.text())
-        # processor.generate_two_columns(self.select_bb_sheet__line.text())
+        post_processor.generate_two_columns()
+        new_roster_df = post_processor.append_to_roster(roster_df)
+        
+        try:
+            new_roster_df.to_csv(path_to_roster_file, index=False)
+            show_message(2, f"Your file has been successfully saved to {path_to_roster_file} and is ready to be uploaded!!")
+        except PermissionError as e:
+            show_message(1, f"It seems like you have the file open, please close the file and try again.")
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate

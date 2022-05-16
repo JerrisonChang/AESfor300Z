@@ -18,14 +18,11 @@ class PostProcessor():
         self.comment_bank = read_spreadsheet(PATH_TO_COMMENT_BANK)
         self.has_comment = True
     
-    def generate_two_columns(self, roster_df: pd.DataFrame = None):
+    def generate_two_columns(self):
         final_score = self.reviewed_spreadsheet.apply(self.calculate_final_score, axis=1)
         smart_comment = self.reviewed_spreadsheet.apply(self.write_comment, axis = 1)
         self.reviewed_spreadsheet['final score'] = final_score
         self.reviewed_spreadsheet['smart comment'] = smart_comment
-
-        if roster_df:
-            self.append_to_roster(roster_df)
    
     def append_to_roster(self, roster_df: pd.DataFrame):
         def helper(row: pd.Series, reviewed_df: pd.DataFrame):
@@ -36,7 +33,8 @@ class PostProcessor():
         
         reference_df = self.reviewed_spreadsheet.set_index(USERNAME_COL)
         roster_df.apply(helper, args=(reference_df,), axis=1)
-
+        
+        return roster_df
 
     def get_comments(self, comment_IDs: str) -> str:
         """
