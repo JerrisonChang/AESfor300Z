@@ -16,9 +16,12 @@ from models.postprocessor import PostProcessor
 from helperscripts.readingfiles import read_spreadsheet
 from gui.quickutil import show_message
 
+from typing import Set
 
-COLUMNS = ['content', 'research', 'organization', 'communication', 'efforts', 'quality of writing', 'bibliography']
 
+# COLUMNS = ['content', 'research', 'organization', 'communication', 'efforts', 'quality of writing', 'bibliography']
+COLUMNS = ['content_prediction', 'research_prediction', 'organization_prediction', 'communication_prediction', 'efforts_prediction', 'quality of writing_prediction', 'bibliography']
+COMMENT_ID_SEP = ", "
 class ExtensionError(Exception):
     pass
 
@@ -273,13 +276,13 @@ class Ui_MainWindow(object):
             "file_format": "Spread sheets (*.csv *.xlsx)",
             "action": self.load_predicted
         }
-        self.select_predicted__browse_btn.clicked.connect(lambda: self.browse_file(self.select_predicted__line, browse_file_option))
+        self.select_predicted__browse_btn.clicked.connect(lambda x: self.browse_file(self.select_predicted__line, browse_file_option))
         self.std_name__comboBox.currentIndexChanged.connect(self.change_current_student)
         self.review__next_std_btn.clicked.connect(self.next_student)
         self.review__save_btn.clicked.connect(self.tab2_save)
-        self.commentWidget.checkComment.connect(lambda x: print(f"current checked id: {x}"))
-        # self.current_std_Table.dataChanged.connect(lambda: print("data changed detected"))
-        # self.grade_table.dataChanged.connect(lambda: print("data change detected"))
+        # self.commentWidget.checkComment.connect(lambda x: self.update_human_df_comments_id(x))
+        self.commentWidget.checkComment.connect(self.update_human_df_comment_ids)
+        self.commentWidget.typeComment.connect(self.update_human_df_customized_comments)
 
     def tab3_setup(self):
         self.select_gradebook__browse_btn.clicked.connect(lambda x: self.browse_file(self.select_gradebook__line, {"title": "Select Gradebook file"}))
@@ -321,12 +324,36 @@ class Ui_MainWindow(object):
         human = self.tab2__human_df.loc[netId, COLUMNS]
         df = pd.DataFrame({'machine': machine, 'human': human}, index=COLUMNS)
         self.current_std_Table = TableModel(df)
-        self.current_std_Table.dataChanged.connect(lambda: self.update_human_df(netId, df['human']))
+        self.current_std_Table.dataChanged.connect(lambda x: self.update_human_df(netId, df['human']))
         self.grade_table.setModel(self.current_std_Table)
+        
+    def display_comments(self, netId: str):
+        print("display_comments")
+        pure_text = self.tab2__human_df.loc[netId, "comments ID"]
+        id_set = set([int(i) for i in pure_text.split(COMMENT_ID_SEP)]) if len(pure_text) > 0 else None
+        customized_comment = self.tab2__human_df.loc[netId, "customized comment"]
+        
+        self.commentWidget.change_comments(id_set, customized_comment)
+        
         
     def update_human_df(self, netId: str, data: pd.Series):
         for i in COLUMNS:
             self.tab2__human_df.loc[netId, i] = data[i]
+
+    def update_human_df_comment_ids(self, comments_ids: Set[int]):
+        try: self.tab2__std_dict
+        except AttributeError as e:
+            print("not finished initialization yet")
+            return
+        
+        current_netId = self.tab2__std_dict.get(self.std_name__comboBox.currentText(), None)
+        if not current_netId: return
+
+        self.tab2__human_df.loc[current_netId, "comments ID"] = COMMENT_ID_SEP.join([str(i) for i in comments_ids])
+
+    def update_human_df_customized_comments(self, comments: str):
+        current_netId = self.tab2__std_dict.get(self.std_name__comboBox.currentText())
+        self.tab2__human_df.loc[current_netId, "customized comment"] = comments
 
     def load_predicted(self):
         fileName = self.select_predicted__line.text()
@@ -334,6 +361,8 @@ class Ui_MainWindow(object):
         self.tab2__master_df = read_spreadsheet(fileName)
         self.tab2__master_df.set_index("Username", inplace=True)
         self.tab2__human_df = self.tab2__master_df.copy()
+        self.tab2__human_df["comments ID"] = ""
+        self.tab2__human_df["customized comment"] = ""
         self.get_student_name()
 
     def get_student_name(self):
@@ -351,7 +380,7 @@ class Ui_MainWindow(object):
 
         pass
 
-    def change_current_student(self):
+    def change_current_student(self, x):
         text = self.std_name__comboBox.currentText()
         index = self.std_name__comboBox.currentIndex()
         netId = self.tab2__std_dict[text]
@@ -364,6 +393,7 @@ class Ui_MainWindow(object):
 
         # display table
         self.display_grades(netId)
+        self.display_comments(netId)
     
     def create_prediction_template(self):
         path_to_roster = self.select_roster__line.text()

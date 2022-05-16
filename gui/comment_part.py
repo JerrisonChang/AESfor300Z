@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from helperscripts.comments_loader import load_comment_bank
 from .TableModel import CommentTable
 from enum import Enum
-
+from typing import Set
 
 class Catagories(Enum):
     CONTENT = "content"
@@ -27,6 +27,7 @@ class Catagories(Enum):
 class CommentWidget(QtWidgets.QWidget):
     
     checkComment = QtCore.pyqtSignal(set, name="checkComment")
+    typeComment = QtCore.pyqtSignal(str, name="typeComment")
     
     def __init__ (self, parent = None):
         QtWidgets.QWidget.__init__(self, parent)
@@ -125,7 +126,15 @@ class CommentWidget(QtWidgets.QWidget):
 
         self.tableView__comments.model().sourceModel().boxChecked.connect(lambda x: self.changeComment(x, 1))    
         self.tableView__comments.model().sourceModel().boxUnchecked.connect(lambda x: self.changeComment(x, 2))    
+        self.plainTextEdit__cust_comments.textChanged.connect(self.emit_textChanged)
         # self.tableView__comments.resizeColumnsToContents()
+
+
+    def change_comments(self, comment_ids: Set[int], comments: str):
+        self.proxy_model.setSourceModel(CommentTable(load_comment_bank().fillna(""), comment_ids))
+        self.tableView__comments.model().sourceModel().boxChecked.connect(lambda x: self.changeComment(x, 1))    
+        self.tableView__comments.model().sourceModel().boxUnchecked.connect(lambda x: self.changeComment(x, 2))
+        self.plainTextEdit__cust_comments.setPlainText(comments)
 
     def changeComment(self, element: int, op: int):
         if op == 1:
@@ -134,6 +143,10 @@ class CommentWidget(QtWidgets.QWidget):
             self.checkedComments.remove(element)
 
         self.checkComment.emit(self.checkedComments)
+        # print("emitted signal")
+
+    def emit_textChanged(self):
+        self.typeComment.emit(self.plainTextEdit__cust_comments.toPlainText())
 
     def enable_disable_mod(self, checkbox: QtWidgets.QRadioButton, name: str):
         # checks = self.tableView__comments.model().get_check_state()

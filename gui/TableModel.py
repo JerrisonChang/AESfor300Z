@@ -1,7 +1,8 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
 import pandas as pd
-from typing import List
+
+from typing import List, Set
 
 class TableModel(QtCore.QAbstractTableModel):
     def __init__(self, data: pd.DataFrame):
@@ -49,9 +50,10 @@ class CommentTable(TableModel):
     boxCheckedSignal = QtCore.pyqtSignal(int, name="boxChecked")
     boxUncheckedSignal = QtCore.pyqtSignal(int, name="boxUnchecked")
     
-    def __init__(self, data: pd.DataFrame):
+    def __init__(self, data: pd.DataFrame, checked_set: Set[int] = None):
         super().__init__(data)
-        self.checks = {} 
+
+        self.checks = {} if checked_set is None else {QtCore.QPersistentModelIndex(self.index(i-1, 0)): 2 for i in checked_set}
 
     def data(self, index, role = Qt.DisplayRole):
         row = index.row()
