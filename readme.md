@@ -27,7 +27,7 @@ This is an open source text analysis software; you can also download it [here](h
 
 # System Pipeline
 <p align="center">
-  <img src="./img/flowchart_temp.png" width="700">
+  <img src="./img/pipeline.jpg" width="700">
 </p>
 
 # Prerequisites
